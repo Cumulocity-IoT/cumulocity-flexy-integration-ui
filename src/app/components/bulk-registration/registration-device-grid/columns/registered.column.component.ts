@@ -1,5 +1,5 @@
 import { BaseColumn, ColumnConfig } from '@c8y/ngx-components';
-import { ColumnFilterTemplate } from '~models';
+import { ColumnFilterTemplate } from '../../../../models/flexy-grid.model';
 import { RegisteredCellRendererComponent } from '../cell-renderer/registered/registered.cell-renderer.component';
 
 export class RegisteredColumn extends BaseColumn {

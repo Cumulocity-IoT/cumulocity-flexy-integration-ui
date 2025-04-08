@@ -4,13 +4,16 @@ import { IdentityService } from '@c8y/ngx-components/api';
 
 @Injectable({ providedIn: 'root' })
 export class ExternalIDService {
-  constructor(private identityService: IdentityService, private inventoryService: InventoryService) {}
+  constructor(
+    private identityService: IdentityService,
+    private inventoryService: InventoryService
+  ) {}
 
   async getExternalID(externalId: string, type: string): Promise<IExternalIdentity> {
     return this.identityService
       .detail({
         type,
-        externalId
+        externalId,
       })
       .then((res) => res.data);
   }
@@ -42,8 +45,8 @@ export class ExternalIDService {
         type: externalType,
         externalId: externalId,
         managedObject: {
-          id: deviceId
-        }
+          id: deviceId,
+        },
       })
       .then((res) => res.data);
   }

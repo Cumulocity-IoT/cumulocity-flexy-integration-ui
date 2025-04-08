@@ -71,7 +71,7 @@ export interface FlexyCommandFile {
 
 export declare const enum FlexyIntegrated {
   Integrated = 'yes',
-  Not_integrated = 'no'
+  Not_integrated = 'no',
 }
 
 export interface FlexyConnectorFile {

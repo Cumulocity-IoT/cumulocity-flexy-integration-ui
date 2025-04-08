@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertService } from '@c8y/ngx-components';
 import { BsModalRef } from 'ngx-bootstrap/modal';
-import { FlexySettings } from '~models';
-import {
-  CerdentialsService,
-  MicroserviceIntegrationService,
-  PluginService,
-  Talk2mService,
-} from '~services';
+import { FlexySettings } from '../../models/flexy.model';
+import { MicroserviceIntegrationService } from '../../services/c8y-microservice-talk2m-integration.service';
+import { CerdentialsService } from '../../services/credentials.service';
+import { PluginService } from '../../services/plugin.service';
+import { Talk2mService } from '../../services/talk2m.service';
 
 @Component({
   selector: 'plugin-settings',
@@ -26,12 +24,11 @@ export class SettingsComponent implements OnInit {
     private c8yMicroservice: MicroserviceIntegrationService,
     private talk2mService: Talk2mService,
     private credentialsService: CerdentialsService,
-    private pluginService: PluginService,
+    private pluginService: PluginService
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.isMicroserviceEnabled =
-      await this.c8yMicroservice.isMicroserviceEnabled();
+    this.isMicroserviceEnabled = await this.c8yMicroservice.isMicroserviceEnabled();
     this.config = this.pluginService.pluginConfig;
     this.talk2mConnected = await this.talk2mService.isSessionActive();
   }
@@ -48,11 +45,13 @@ export class SettingsComponent implements OnInit {
   async login(config = this.config): Promise<void> {
     if (!config || !config.account || !config.username || !config.password) {
       this.alert.warning('Login Talk2M failed. Missing parameter.');
+
       return;
     }
 
     if (this.talk2mConnected) {
       this.alert.info('Already connected.');
+
       return;
     }
 
@@ -63,7 +62,7 @@ export class SettingsComponent implements OnInit {
       const session = await this.talk2mService.login(
         config.account,
         config.username,
-        config.password,
+        config.password
       );
 
       this.talk2mConnected = true;

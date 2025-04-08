@@ -3,11 +3,9 @@ import { IManagedObject } from '@c8y/client';
 import { AlertService } from '@c8y/ngx-components';
 import { InventoryService, TenantService } from '@c8y/ngx-components/api';
 import { Subject } from 'rxjs';
-import {
-  CerdentialsService,
-  MicroserviceIntegrationService,
-  SyncOnloadJobService,
-} from '~services';
+import { MicroserviceIntegrationService } from '../../../services/c8y-microservice-talk2m-integration.service';
+import { CerdentialsService } from '../../../services/credentials.service';
+import { SyncOnloadJobService } from '../../../services/synchronize-job.service';
 
 @Component({
   selector: 'app-synchjob-card',
@@ -27,7 +25,7 @@ export class SynchjobCardComponent implements OnInit {
     private tenantOptionsService: CerdentialsService,
     private alert: AlertService,
     private syncJob: SyncOnloadJobService,
-    private tenantService: TenantService,
+    private tenantService: TenantService
   ) {}
 
   ngOnInit(): void {
@@ -39,6 +37,7 @@ export class SynchjobCardComponent implements OnInit {
       id: this.id,
       isActive: this.toggleActive,
     };
+
     await this.inventoryService.update(partialUpdateObject);
   }
 
@@ -55,13 +54,11 @@ export class SynchjobCardComponent implements OnInit {
         const tenantId = tenant.data.name;
 
         if (token.length == 1) {
-          const result = await this.c8yMSService.onloadNow(
-            token[0].value,
-            this.id,
-            tenantId,
-          );
+          const result = await this.c8yMSService.onloadNow(token[0].value, this.id, tenantId);
+
           if (result.status != 200) {
             const result_data = await result.json();
+
             this.alert.danger('Onloading job failed.', result_data);
           } else {
             this.alert.success('Onloading data was successful.');
@@ -72,11 +69,8 @@ export class SynchjobCardComponent implements OnInit {
         }
       },
       (error) => {
-        this.alert.danger(
-          'Onloading job failed. Platform is not available.',
-          error,
-        );
-      },
+        this.alert.danger('Onloading job failed. Platform is not available.', error);
+      }
     );
   }
 }

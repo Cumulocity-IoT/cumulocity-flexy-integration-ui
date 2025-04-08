@@ -1,47 +1,80 @@
-<c8y-modal #modal [title]="'Install Agent' | translate" [labels]="labels"
-  [disabled]="!devices || !config.deviceUsername || !config.devicePassword" (onDismiss)="dismiss($event)"
-  (onClose)="submit($event)">
+<c8y-modal
+  #modal
+  [title]="'Install Agent' | translate"
+  [labels]="labels"
+  [disabled]="!devices || !config.deviceUsername || !config.devicePassword"
+  (onDismiss)="dismiss($event)"
+  (onClose)="submit($event)"
+>
   <fieldset>
     <div class="legend form-block">Files</div>
 
-    <loading-spinner [loading]="loadingReleases" [title]="'Loading latest release information'"></loading-spinner>
+    <loading-spinner
+      [loading]="loadingReleases"
+      [title]="'Loading latest release information'"
+    ></loading-spinner>
 
     <div class="form-group">
-      <label for="release">{{'Official Releases' | translate }}</label>
-      <select id="release" [disabled]="!offcialReleases" [(ngModel)]="selectedRelease" (change)="setRelease()">
-        <option *ngFor="let release of offcialReleases" [ngValue]="release">{{ release.name }}</option>
+      <label for="release">{{ 'Official Releases' | translate }}</label>
+      <select
+        id="release"
+        [(ngModel)]="selectedRelease"
+        [disabled]="!offcialReleases"
+        (change)="setRelease()"
+      >
+        <option *ngFor="let release of offcialReleases" [ngValue]="release">
+          {{ release.name }}
+        </option>
       </select>
     </div>
 
     <div class="form-group">
       <label for="agent_url_connector">{{ 'Connector Jar' | translate }}</label>
       <div class="input-group">
-        <input id="agent_url_connector" name="url" type="text" class="form-control"
+        <input
+          class="form-control"
+          id="agent_url_connector"
+          [(ngModel)]="config.url.connector"
+          name="url"
+          type="text"
           placeholder="https://my.server/path-to-file/flexy-cumulocity-connector.jar"
-          [(ngModel)]="config.url.connector" />
+        />
       </div>
     </div>
 
     <div class="form-group">
       <label for="agent_url_jvmrun">{{ 'JVM Run' | translate }}</label>
       <div class="input-group">
-        <input id="agent_url_jvmrun" name="url" type="text" class="form-control"
-          placeholder="https://my.server/path-to-file/jvmrun" [(ngModel)]="config.url.jvmrun" />
+        <input
+          class="form-control"
+          id="agent_url_jvmrun"
+          [(ngModel)]="config.url.jvmrun"
+          name="url"
+          type="text"
+          placeholder="https://my.server/path-to-file/jvmrun"
+        />
       </div>
     </div>
 
     <div class="form-group">
       <label for="agent_url_cumulocity">{{ 'Cumulocity Connector Config' | translate }}</label>
       <div class="input-group">
-        <input id="agent_url_cumulocity" name="url" type="text" class="form-control"
+        <input
+          class="form-control"
+          id="agent_url_cumulocity"
+          [(ngModel)]="config.url.cumulocity"
+          name="url"
+          type="text"
           placeholder="https://my.server/path-to-file/CumulocityConnectorConfig.json"
-          [(ngModel)]="config.url.cumulocity" />
+        />
       </div>
     </div>
   </fieldset>
 
   <fieldset>
-    <div class="legend form-block">{{ 'Selected Devices' | translate }} ({{ devices?.length }})</div>
+    <div class="legend form-block">
+      {{ 'Selected Devices' | translate }} ({{ devices?.length }})
+    </div>
     <div class="form-group">
       <ng-container *ngIf="devices && devices.length; else noDevices">
         <ul style="max-height: 200px; overflow-y: auto">
@@ -65,22 +98,35 @@
   </fieldset>
 
   <fieldset>
-    <div class="legend form-block">{{'Device Credentials' | translate }}</div>
+    <div class="legend form-block">{{ 'Device Credentials' | translate }}</div>
 
     <div class="form-group">
       <label for="agent_deviceuser">{{ 'Device Username' | translate }}</label>
       <div class="input-group">
-        <input id="agent_deviceuser" type="text" name="deviceusername" class="form-control" placeholder="deviceuser"
-          [(ngModel)]="config.deviceUsername" />
+        <input
+          class="form-control"
+          id="agent_deviceuser"
+          [(ngModel)]="config.deviceUsername"
+          type="text"
+          name="deviceusername"
+          placeholder="deviceuser"
+        />
       </div>
     </div>
 
     <div class="form-group">
       <label for="agent_devicepass">{{ 'Device Password' | translate }}</label>
       <div class="input-group">
-        <input id="agent_devicepass" name="devicepassword" autocomplete="on" class="form-control"
-          [type]="showPassword ? 'text' : 'password'" placeholder="password" [(ngModel)]="config.devicePassword" />
-        <button type="button" class="btn btn-clear btn-icon" (click)="showPassword = !showPassword">
+        <input
+          class="form-control"
+          id="agent_devicepass"
+          [(ngModel)]="config.devicePassword"
+          [type]="showPassword ? 'text' : 'password'"
+          name="devicepassword"
+          autocomplete="on"
+          placeholder="password"
+        />
+        <button class="btn btn-clear btn-icon" (click)="showPassword = !showPassword" type="button">
           <i [c8yIcon]="showPassword ? 'eye-slash' : 'eye'"></i>
         </button>
       </div>
@@ -88,45 +134,81 @@
   </fieldset>
 
   <fieldset>
-    <div class="legend form-block">{{ 'Cumulocity Credentials' | translate}}</div>
+    <div class="legend form-block">{{ 'Cumulocity Credentials' | translate }}</div>
     <div class="form-group">
       <label for="c8y_host">{{ 'Host' | translate }}</label>
       <div class="input-group">
-        <input id="c8y_host" type="text" name="host" class="form-control" placeholder="mqtt.cumulocity.com"
-          [(ngModel)]="config.c8yHost" />
+        <input
+          class="form-control"
+          id="c8y_host"
+          [(ngModel)]="config.c8yHost"
+          type="text"
+          name="host"
+          placeholder="mqtt.cumulocity.com"
+        />
       </div>
     </div>
 
     <div class="form-group">
       <label for="c8y_port">{{ 'Port' | translate }}</label>
       <div class="input-group">
-        <input id="c8y_port" type="text" name="port" class="form-control" placeholder="8883"
-          [(ngModel)]="config.c8yPort" />
+        <input
+          class="form-control"
+          id="c8y_port"
+          [(ngModel)]="config.c8yPort"
+          type="text"
+          name="port"
+          placeholder="8883"
+        />
       </div>
     </div>
 
     <div class="form-group">
       <label for="c8y_tenant">{{ 'Bootstrap Tenant' | translate }}</label>
       <div class="input-group">
-        <input id="c8y_tenant" type="text" name="tenant" class="form-control" placeholder="management"
-          [(ngModel)]="config.c8yTenant" />
+        <input
+          class="form-control"
+          id="c8y_tenant"
+          [(ngModel)]="config.c8yTenant"
+          type="text"
+          name="tenant"
+          placeholder="management"
+        />
       </div>
     </div>
 
     <div class="form-group">
       <label for="c8y_user">{{ 'Bootstrap Username' | translate }}</label>
       <div class="input-group">
-        <input id="c8y_user" type="text" name="username" autocomplete="username" class="form-control"
-          placeholder="devicebootstrap" [(ngModel)]="config.c8yUsername" />
+        <input
+          class="form-control"
+          id="c8y_user"
+          [(ngModel)]="config.c8yUsername"
+          type="text"
+          name="username"
+          autocomplete="username"
+          placeholder="devicebootstrap"
+        />
       </div>
     </div>
 
     <div class="form-group">
       <label for="c8y_pass">{{ 'Bootstrap Password' | translate }}</label>
       <div class="input-group">
-        <input id="c8y_pass" name="password" autocomplete="current-password" class="form-control" placeholder="password"
-          [type]="showC8YPassword ? 'text' : 'password'" [(ngModel)]="config.c8yPassword" />
-        <button type="button" class="btn btn-clear btn-icon" (click)="showC8YPassword = !showC8YPassword">
+        <input
+          class="form-control"
+          id="c8y_pass"
+          [(ngModel)]="config.c8yPassword"
+          [type]="showC8YPassword ? 'text' : 'password'"
+          name="password"
+          autocomplete="current-password"
+          placeholder="password"
+        />
+        <button
+          class="btn btn-clear btn-icon"
+          (click)="showC8YPassword = !showC8YPassword"
+          type="button"
+        >
           <i [c8yIcon]="showC8YPassword ? 'eye-slash' : 'eye'"></i>
         </button>
       </div>
@@ -134,13 +216,19 @@
   </fieldset>
 
   <fieldset>
-    <div class="legend form-block" (click)="showAdvancedOptions = !showAdvancedOptions" style="cursor: pointer">
-      <i [ngClass]="{
+    <div
+      class="legend form-block"
+      (click)="showAdvancedOptions = !showAdvancedOptions"
+      style="cursor: pointer"
+    >
+      <i
+        [ngClass]="{
           'dlt-c8y-icon-add-new': !showAdvancedOptions,
           'dlt-c8y-icon-negative': showAdvancedOptions,
-          'm-r-8': true
-        }"></i>
-      {{ 'Advanced Options' | translate}}
+          'm-r-8': true,
+        }"
+      ></i>
+      {{ 'Advanced Options' | translate }}
     </div>
 
     <div *ngIf="showAdvancedOptions">
@@ -148,7 +236,7 @@
       <ul [ngStyle]="{ 'list-style': 'none', padding: 0, margin: '8px 0' }">
         <li *ngFor="let step of installProcessSteps">
           <label class="c8y-checkbox">
-            <input type="checkbox" [disabled]="step.disabled" [(ngModel)]="step.selected" />
+            <input [(ngModel)]="step.selected" [disabled]="step.disabled" type="checkbox" />
             <span></span>
             <span>{{ step.label }}</span>
           </label>

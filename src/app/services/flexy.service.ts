@@ -1,10 +1,6 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
-import {
-  DeviceRegistrationService,
-  IExternalIdentity,
-  IManagedObject,
-} from '@c8y/client';
+import { DeviceRegistrationService, IExternalIdentity, IManagedObject } from '@c8y/client';
 import { Subscription } from 'rxjs';
 import {
   EXTERNALID_FLEXY_SERIALTYPE,
@@ -12,18 +8,16 @@ import {
   FLEXY_CONNECTOR_RELEASE_LIST_URL,
   FLEXY_EXTERNALID_FLEXY_PREFIX,
   FLEXY_EXTERNALID_TALK2M_PREFIX,
-} from '~constants';
+} from '../constants/flexy-integration.constants';
 import {
   EwonFlexyStructure,
   FlexyCommandFile,
   FlexyConnectorRelease,
   FlexyIntegrated,
   FlexySettings,
-  PluginConfig,
-  Talk2MAccount,
-  Talk2MPool,
-  Talk2MUrlOptions,
-} from '~models';
+} from '../models/flexy.model';
+import { PluginConfig } from '../models/plugin.model';
+import { Talk2MAccount, Talk2MPool, Talk2MUrlOptions } from '../models/talk2m.model';
 import { EWONFlexyDeviceRegistrationService } from './ewon-flexy-device-registration.service';
 import { ExternalIDService } from './external-id.service';
 import { Talk2mService } from './talk2m.service';
@@ -36,20 +30,16 @@ export class FlexyService implements OnDestroy {
 
   constructor(
     private http: HttpClient,
+    private deviceRegistrationService: DeviceRegistrationService,
     private talk2mService: Talk2mService,
     private flexyRegistrationService: EWONFlexyDeviceRegistrationService,
-    private externalIDService: ExternalIDService,
-    private deviceRegistrationService: DeviceRegistrationService,
+    private externalIDService: ExternalIDService
   ) {
     this.subscriptions.add(
-      this.talk2mService.session$.subscribe(
-        (session) => (this.session = session),
-      ),
+      this.talk2mService.session$.subscribe((session) => (this.session = session))
     );
     this.subscriptions.add(
-      this.talk2mService.account$.subscribe(
-        (account) => (this.account = account),
-      ),
+      this.talk2mService.account$.subscribe((account) => (this.account = account))
     );
   }
 
@@ -72,11 +62,8 @@ export class FlexyService implements OnDestroy {
 
   async getEwonsByPool(pool: Talk2MPool): Promise<EwonFlexyStructure[]> {
     const response = await this.getEwons(this.session, pool.id);
-    if (
-      !response ||
-      !response.hasOwnProperty('body') ||
-      !response.body.hasOwnProperty('ewons')
-    )
+
+    if (!response || !response.hasOwnProperty('body') || !response.body.hasOwnProperty('ewons'))
       return null;
 
     return response.body.ewons.map((ewon: EwonFlexyStructure) => {
@@ -84,15 +71,9 @@ export class FlexyService implements OnDestroy {
       ewon.talk2m_integrated = FlexyIntegrated.Integrated;
 
       this.flexyRegistrationService
-        .isDeviceRegistered(
-          ewon.id,
-          FLEXY_EXTERNALID_TALK2M_PREFIX,
-          EXTERNALID_TALK2M_SERIALTYPE,
-        )
+        .isDeviceRegistered(ewon.id, FLEXY_EXTERNALID_TALK2M_PREFIX, EXTERNALID_TALK2M_SERIALTYPE)
         .then((result) => {
-          ewon.registered = result
-            ? FlexyIntegrated.Integrated
-            : FlexyIntegrated.Not_integrated;
+          ewon.registered = result ? FlexyIntegrated.Integrated : FlexyIntegrated.Not_integrated;
         });
 
       return ewon;
@@ -100,30 +81,22 @@ export class FlexyService implements OnDestroy {
   }
 
   async getEwonsOfPools(pools: Talk2MPool[]): Promise<EwonFlexyStructure[]> {
-    const response = await Promise.all(
-      pools.map((pool) => this.getEwonsByPool(pool)),
-    );
-    return response.reduce(
-      (prev, next) => [...prev, ...next],
-      <EwonFlexyStructure[]>[],
-    );
+    const response = await Promise.all(pools.map((pool) => this.getEwonsByPool(pool)));
+    return response.reduce((prev, next) => [...prev, ...next], <EwonFlexyStructure[]>[]);
   }
 
   async getSerial(
     deviceName: string,
     deviceUsername: FlexySettings['deviceUsername'],
-    devicePassword: FlexySettings['devicePassword'],
+    devicePassword: FlexySettings['devicePassword']
   ): Promise<string> {
-    const url = this.talk2mService.buildUrl(
-      `get/${deviceName}/rcgi.bin/ParamForm`,
-      {
-        deviceName,
-        account: this.account.accountName,
-        deviceUsername,
-        devicePassword,
-        AST_Param: '$dtES',
-      },
-    );
+    const url = this.talk2mService.buildUrl(`get/${deviceName}/rcgi.bin/ParamForm`, {
+      deviceName,
+      account: this.account.accountName,
+      deviceUsername,
+      devicePassword,
+      AST_Param: '$dtES',
+    });
     const res = await this.http
       .get<any>(url, this.talk2mService.generateHeaderOptions())
       .toPromise();
@@ -136,7 +109,7 @@ export class FlexyService implements OnDestroy {
   async installSoftware(
     file: FlexyCommandFile,
     deviceName: string,
-    config: FlexySettings,
+    config: FlexySettings
   ): Promise<string> {
     const url = file.server + file.files[0];
     const fileName = url.split(/\/+/).pop();
@@ -148,7 +121,7 @@ export class FlexyService implements OnDestroy {
   async downloadSoftware(
     filename: string,
     deviceName: string,
-    config: FlexySettings,
+    config: FlexySettings
   ): Promise<boolean> {
     const dl = await this.downloadFile(filename, deviceName, config);
 
@@ -157,26 +130,21 @@ export class FlexyService implements OnDestroy {
 
   async registerFlexy(
     ewon: EwonFlexyStructure,
-    deviceGroupId?: string,
+    deviceGroupId?: string
   ): Promise<EwonFlexyStructure> {
     const ewonId = ewon.id.toString();
 
     if (ewon.registered !== FlexyIntegrated.Not_integrated)
-      return Promise.reject(
-        `Device with ewonId "${ewonId}" is already registered.`,
-      );
+      return Promise.reject(`Device with ewonId "${ewonId}" is already registered.`);
 
-    const requests =
-      await this.flexyRegistrationService.getOpenDeviceRegistrations();
+    const requests = await this.flexyRegistrationService.getOpenDeviceRegistrations();
     const existingRequest = requests.find(
-      (element) => element.id == FLEXY_EXTERNALID_TALK2M_PREFIX + ewonId,
+      (element) => element.id == FLEXY_EXTERNALID_TALK2M_PREFIX + ewonId
     );
 
     if (!existingRequest) {
       // 1. Create device request
-      await this.flexyRegistrationService.createDeviceRequestRegistration(
-        ewonId,
-      );
+      await this.flexyRegistrationService.createDeviceRequestRegistration(ewonId);
       // 1.1 Bootstraps the device credentials
       await this.flexyRegistrationService.requestDeviceCredentials(ewonId);
       // 1.2 Change status to acceptance
@@ -184,30 +152,28 @@ export class FlexyService implements OnDestroy {
     }
 
     // 2. Create inventory managed object
-    const deviceMO =
-      await this.flexyRegistrationService.createDeviceInventory(ewon);
+    const deviceMO = await this.flexyRegistrationService.createDeviceInventory(ewon);
+
     if (!deviceMO) return Promise.reject('Create device invenotry failed.');
 
     // 2.1 Change owner
-    const deviceInventoryMO =
-      await this.flexyRegistrationService.setDevivceOwnerExternalId(
-        FLEXY_EXTERNALID_TALK2M_PREFIX + ewonId,
-        deviceMO.id,
-      );
+    const deviceInventoryMO = await this.flexyRegistrationService.setDevivceOwnerExternalId(
+      FLEXY_EXTERNALID_TALK2M_PREFIX + ewonId,
+      deviceMO.id
+    );
+
     if (!deviceInventoryMO) return Promise.reject('Device owner was not set.');
 
     // 3. Assign externalId to inventory
-    const identityMO = await this.createExternalIDForDevice(
-      deviceInventoryMO,
-      ewonId,
-    );
+    const identityMO = await this.createExternalIDForDevice(deviceInventoryMO, ewonId);
+
     if (!identityMO) return Promise.reject('External ID was not assigned.');
 
     // 4. Assign group to inventory
     if (ewon.pool && deviceGroupId) {
       await this.flexyRegistrationService.addGroupChildAssetToDevice(
         deviceGroupId,
-        identityMO.managedObject.id.toString(),
+        identityMO.managedObject.id.toString()
       );
     }
 
@@ -218,10 +184,7 @@ export class FlexyService implements OnDestroy {
 
   // new
   async getDeviceByExternalID(externalID: string): Promise<IManagedObject> {
-    return this.externalIDService.getDeviceByExternalID(
-      externalID,
-      EXTERNALID_FLEXY_SERIALTYPE,
-    );
+    return this.externalIDService.getDeviceByExternalID(externalID, EXTERNALID_FLEXY_SERIALTYPE);
   }
 
   async fetchConnectorReleases(): Promise<FlexyConnectorRelease[]> {
@@ -240,6 +203,7 @@ export class FlexyService implements OnDestroy {
           responseType: 'json',
         })
         .toPromise();
+
       releases.push(...data);
     } catch (error: any) {
       console.log('fetchConnectorReleases|error', error.message);
@@ -253,15 +217,14 @@ export class FlexyService implements OnDestroy {
   }
 
   async deviceHasRegisterRequest(ewonId: string): Promise<boolean> {
-    const requests =
-      await this.flexyRegistrationService.getOpenDeviceRegistrations(true);
+    const requests = await this.flexyRegistrationService.getOpenDeviceRegistrations(true);
 
     return !!requests.find((element) => element.id == ewonId);
   }
 
   async createRegistration(
     ewon: EwonFlexyStructure,
-    prefix = FLEXY_EXTERNALID_FLEXY_PREFIX,
+    prefix = FLEXY_EXTERNALID_FLEXY_PREFIX
   ): Promise<EwonFlexyStructure> {
     const ewonId = String(ewon.serial);
     const prefixedEwonId = prefix + ewonId;
@@ -288,18 +251,18 @@ export class FlexyService implements OnDestroy {
   // TODO check / fixme
   async acceptRegistration(
     ewon: EwonFlexyStructure,
-    prefix = FLEXY_EXTERNALID_FLEXY_PREFIX,
+    prefix = FLEXY_EXTERNALID_FLEXY_PREFIX
   ): Promise<boolean> {
     const ewonId = String(ewon.serial);
     const prefixedEwonId = prefix + ewonId;
 
     const existingRequest = await this.deviceHasRegisterRequest(prefixedEwonId);
+
     if (!existingRequest) {
       return Promise.reject('Device has no open registration.');
     }
 
-    const { data } =
-      await this.deviceRegistrationService.accept(prefixedEwonId);
+    const { data } = await this.deviceRegistrationService.accept(prefixedEwonId);
 
     return data && !!data.id;
   }
@@ -307,75 +270,46 @@ export class FlexyService implements OnDestroy {
   // -------------------
   // old talk2m service port
   // -------------------
-  async execScript(
-    command: string,
-    deviceName: string,
-    config: FlexySettings,
-  ): Promise<string> {
-    const url = this.talk2mService.buildUrl(
-      `get/${deviceName}/rcgi.bin/ExeScriptForm`,
-      {
-        account: config.account,
-        deviceUsername: config.deviceUsername,
-        devicePassword: config.devicePassword,
-        Command1: command,
-      },
-    );
+  async execScript(command: string, deviceName: string, config: FlexySettings): Promise<string> {
+    const url = this.talk2mService.buildUrl(`get/${deviceName}/rcgi.bin/ExeScriptForm`, {
+      account: config.account,
+      deviceUsername: config.deviceUsername,
+      devicePassword: config.devicePassword,
+      Command1: command,
+    });
 
-    return await this.http
-      .get<any>(url, this.talk2mService.generateHeaderOptions())
-      .toPromise();
+    return await this.http.get<any>(url, this.talk2mService.generateHeaderOptions()).toPromise();
   }
 
   async reboot(deviceName: string, config: FlexySettings): Promise<string> {
-    const url = this.talk2mService.buildUrl(
-      `get/${deviceName}/rcgi.bin/wsdForm`,
-      {
-        account: config.account,
-        deviceUsername: config.deviceUsername,
-        devicePassword: config.devicePassword,
-        AST_ErrorMsg: 'Reboot%20will%20occur...',
-        com_Csave: 1,
-        resetAction: 1,
-        com_BootOp: 0,
-      },
-    );
+    const url = this.talk2mService.buildUrl(`get/${deviceName}/rcgi.bin/wsdForm`, {
+      account: config.account,
+      deviceUsername: config.deviceUsername,
+      devicePassword: config.devicePassword,
+      AST_ErrorMsg: 'Reboot%20will%20occur...',
+      com_Csave: 1,
+      resetAction: 1,
+      com_BootOp: 0,
+    });
 
-    return await this.http
-      .get<any>(url, this.talk2mService.generateHeaderOptions())
-      .toPromise();
+    return await this.http.get<any>(url, this.talk2mService.generateHeaderOptions()).toPromise();
   }
 
-  async downloadFile(
-    filename: string,
-    deviceName: string,
-    config,
-  ): Promise<string> {
-    const url = this.talk2mService.buildUrl(
-      `get/${deviceName}/usr/${filename}`,
-      {
-        AST_Param: '$dtIV $ftT $st_m3', // issue #27 - usage unknown
-        account: config.account,
-        deviceUsername: config.deviceUsername,
-        devicePassword: config.devicePassword,
-      },
-    );
+  async downloadFile(filename: string, deviceName: string, config): Promise<string> {
+    const url = this.talk2mService.buildUrl(`get/${deviceName}/usr/${filename}`, {
+      AST_Param: '$dtIV $ftT $st_m3', // issue #27 - usage unknown
+      account: config.account,
+      deviceUsername: config.deviceUsername,
+      devicePassword: config.devicePassword,
+    });
 
-    return await this.http
-      .get<any>(url, this.talk2mService.generateHeaderOptions())
-      .toPromise();
+    return await this.http.get<any>(url, this.talk2mService.generateHeaderOptions()).toPromise();
   }
 
   // flexyService EXTERNALID_FLEXY_SERIALTYPE
   // talk2mService » EXTERNALID_TALK2M_SERIALTYPE
-  async getExternalID(
-    id,
-    type = EXTERNALID_FLEXY_SERIALTYPE,
-  ): Promise<IExternalIdentity> {
-    return this.externalIDService.getExternalID(
-      this.getExternalIDString(id, type),
-      type,
-    );
+  async getExternalID(id, type = EXTERNALID_FLEXY_SERIALTYPE): Promise<IExternalIdentity> {
+    return this.externalIDService.getExternalID(this.getExternalIDString(id, type), type);
   }
 
   // flexyService EXTERNALID_FLEXY_SERIALTYPE
@@ -383,37 +317,29 @@ export class FlexyService implements OnDestroy {
   async createExternalIDForDevice(
     deviceMO: IManagedObject,
     externalID: string,
-    type = EXTERNALID_FLEXY_SERIALTYPE,
+    type = EXTERNALID_FLEXY_SERIALTYPE
   ): Promise<IExternalIdentity> {
     return this.externalIDService.createExternalIDForDevice(
       deviceMO.id,
       this.getExternalIDString(externalID, type),
-      type,
+      type
     );
   }
 
-  async sendConfig(
-    deviceName: string,
-    config: FlexySettings,
-  ): Promise<boolean> {
-    const url = this.talk2mService.buildUrl(
-      `get/${deviceName}/rcgi.bin/jvmForm`,
-      {
-        formName: 'overwriteBootstrapAuth', // 'setBootstrapAuth',
-        account: config.account,
-        deviceUsername: config.deviceUsername,
-        devicePassword: config.devicePassword,
-        port: config.c8yPort,
-        c8yUser: config.c8yUsername,
-        c8yPass: config.c8yPassword,
-        host: config.c8yHost,
-        tenant: config.c8yTenant,
-      },
-    );
+  async sendConfig(deviceName: string, config: FlexySettings): Promise<boolean> {
+    const url = this.talk2mService.buildUrl(`get/${deviceName}/rcgi.bin/jvmForm`, {
+      formName: 'overwriteBootstrapAuth', // 'setBootstrapAuth',
+      account: config.account,
+      deviceUsername: config.deviceUsername,
+      devicePassword: config.devicePassword,
+      port: config.c8yPort,
+      c8yUser: config.c8yUsername,
+      c8yPass: config.c8yPassword,
+      host: config.c8yHost,
+      tenant: config.c8yTenant,
+    });
 
-    return await this.http
-      .get<any>(url, this.talk2mService.generateHeaderOptions())
-      .toPromise();
+    return await this.http.get<any>(url, this.talk2mService.generateHeaderOptions()).toPromise();
   }
 
   private getExternalIDString(id, type = EXTERNALID_FLEXY_SERIALTYPE): string {

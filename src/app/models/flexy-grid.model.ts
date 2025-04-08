@@ -1,5 +1,5 @@
-import { Column, ColumnDataType, Pagination } from "@c8y/ngx-components";
-import { RegisteredColumn } from "~components/bulk-registration/registration-device-grid/columns/registered.column.component";
+import { Column, ColumnDataType, Pagination } from '@c8y/ngx-components';
+import { RegisteredColumn } from '~components/bulk-registration/registration-device-grid/columns/registered.column.component';
 
 export const FLEXY_GRID_COLUMNS: Column[] = [
   {
@@ -9,14 +9,14 @@ export const FLEXY_GRID_COLUMNS: Column[] = [
     filterable: false,
     sortable: false,
     dataType: ColumnDataType.TextShort,
-    gridTrackSize: '60px'
+    gridTrackSize: '60px',
   },
   {
     name: 'name',
     header: 'Name',
     filterable: false,
     sortable: false,
-    dataType: ColumnDataType.TextShort
+    dataType: ColumnDataType.TextShort,
   },
   {
     name: 'description',
@@ -24,7 +24,7 @@ export const FLEXY_GRID_COLUMNS: Column[] = [
     path: 'description',
     filterable: false,
     sortable: false,
-    dataType: ColumnDataType.TextLong
+    dataType: ColumnDataType.TextLong,
   },
   new RegisteredColumn(),
   {
@@ -33,7 +33,7 @@ export const FLEXY_GRID_COLUMNS: Column[] = [
     path: 'pool',
     filterable: false,
     sortable: false,
-    dataType: ColumnDataType.TextShort
+    dataType: ColumnDataType.TextShort,
   },
   {
     name: 'groups',
@@ -41,12 +41,12 @@ export const FLEXY_GRID_COLUMNS: Column[] = [
     path: 'groups',
     filterable: false,
     sortable: false,
-    dataType: ColumnDataType.TextLong
-  }
+    dataType: ColumnDataType.TextLong,
+  },
 ];
 export const FLEXY_GRID_PAGINATION: Pagination = {
   pageSize: 1000,
-  currentPage: 1
+  currentPage: 1,
 };
 export interface ColumnFilterTemplate {
   type: 'boolean' | 'string' | 'number';

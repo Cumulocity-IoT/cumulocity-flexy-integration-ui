@@ -8,7 +8,7 @@ export const FlexyInstallSteps = {
   ADD_EXTERNAL_ID: 'ADD_EXTERNAL_ID',
   REBOOT_DEVICE: 'REBOOT_DEVICE',
   SEND_CONFIG: 'SEND_CONFIG',
-  ACCEPT_REGISTRATION: 'ACCEPT_REGISTRATION'
+  ACCEPT_REGISTRATION: 'ACCEPT_REGISTRATION',
 };
 export type FlexyInstallSteps = (typeof FlexyInstallSteps)[keyof typeof FlexyInstallSteps];
 

@@ -5,7 +5,7 @@ import { ProgressTrackerService } from '../progress-tracker.service';
 @Component({
   selector: 'progress-tracker',
   templateUrl: './progress-tracker.component.html',
-  styleUrls: ['./progress-tracker.component.less']
+  styleUrls: ['./progress-tracker.component.less'],
 })
 export class ProgressTrackerComponent {
   @Input() set key(key: ProgressTrack['key']) {

@@ -4,8 +4,8 @@ import { InventoryService } from '@c8y/ngx-components/api';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { Observable, Subject } from 'rxjs';
 import { SynchjobModalComponent } from '~components/datamailbox-download/synchjob-modal/synchjob-modal.component';
-import { DM_FRAGMENTTYPE_MO } from '~constants';
-import { IOnloadingJobObject } from '~models';
+import { DM_FRAGMENTTYPE_MO } from '../constants/flexy-integration.constants';
+import { IOnloadingJobObject } from '../models/c8y-custom-objects.model';
 
 @Injectable({ providedIn: 'root' })
 export class SyncOnloadJobService {
@@ -13,7 +13,7 @@ export class SyncOnloadJobService {
 
   constructor(
     private modalService: BsModalService,
-    private inventoryService: InventoryService,
+    private inventoryService: InventoryService
   ) {}
 
   async listOnloadingJobs(): Promise<IManagedObject[]> {
@@ -36,7 +36,8 @@ export class SyncOnloadJobService {
   }
 
   async createOnloadingJob(job: IOnloadingJobObject): Promise<IManagedObject> {
-    let partialManagedObj: Partial<IOnloadingJobObject> = job;
+    const partialManagedObj: Partial<IOnloadingJobObject> = job;
+
     partialManagedObj[DM_FRAGMENTTYPE_MO] = {};
     const newJob = await this.inventoryService.create(partialManagedObj);
     return newJob.data;

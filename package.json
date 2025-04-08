@@ -3,10 +3,11 @@
   "version": "2.2.0",
   "description": "Provides an interface to register HMS Flexy devices from Talk2M into Cumulocity.",
   "scripts": {
-    "serve": "from-env ng serve -u %TENANT",
-    "serve:flexy": "npm run serve -- --shell %APP",
-    "build": "ng build",
+    "serve": "from-env ng serve -u %TENANT --shell %APP",
+    "build": "ng build --configuration development",
     "clean": "rimraf dist",
+    "lint": "eslint . --quiet",
+    "lint:fix": "eslint . --quiet --fix",
     "prebuild": "npm run clean",
     "postbuild": "node -e \"require('fs').rename('dist/plugin.zip', 'dist/${npm_package_name}_${npm_package_version}.zip', function(err) { if (err) console.log(err); console.log('File successfully renamed!') })\""
   },

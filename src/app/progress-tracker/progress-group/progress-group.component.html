@@ -2,7 +2,11 @@
   <nav *ngIf="alwaysShowTabs || tracks.length > 1">
     <ul>
       <li *ngFor="let t of tracks">
-        <button type="button" [ngClass]="{ 'active': t.key === activeTack }" (click)="setTrack(t.key)">
+        <button
+          [ngClass]="{ active: t.key === activeTack }"
+          (click)="setTrack(t.key)"
+          type="button"
+        >
           {{ t.name }}
         </button>
       </li>

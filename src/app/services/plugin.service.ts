@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AlertService } from '@c8y/ngx-components';
-import { PluginConfig } from '~models';
+import { PluginConfig } from '../models/plugin.model';
 import { CerdentialsService } from './credentials.service';
 import { Talk2mService } from './talk2m.service';
 
@@ -11,7 +11,7 @@ export class PluginService {
   constructor(
     private alertService: AlertService,
     private credentialsService: CerdentialsService,
-    private talk2mService: Talk2mService,
+    private talk2mService: Talk2mService
   ) {}
 
   // Check credentials from tenant options
@@ -27,9 +27,7 @@ export class PluginService {
 
       // Is session still active
       if (config.session) {
-        const isActive = await this.talk2mService.isSessionActive(
-          config.session,
-        );
+        const isActive = await this.talk2mService.isSessionActive(config.session);
 
         if (isActive) {
           this.talk2mService.session = config.session;
@@ -39,10 +37,7 @@ export class PluginService {
         }
       }
     } catch (error: any) {
-      this.alertService.warning(
-        'Get credentials failed.',
-        JSON.stringify(error.res),
-      );
+      this.alertService.warning('Get credentials failed.', JSON.stringify(error.res));
     }
   }
 }

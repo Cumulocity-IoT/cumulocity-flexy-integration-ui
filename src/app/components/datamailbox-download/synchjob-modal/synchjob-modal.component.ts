@@ -16,19 +16,13 @@ import {
   EXTERNALID_TALK2M_SERIALTYPE,
   FLEXY_EXTERNALID_FLEXY_PREFIX,
   FLEXY_EXTERNALID_TALK2M_PREFIX,
-} from '~constants';
-import {
-  EwonFlexyStructure,
-  FlexyIntegrated,
-  FlexySettings,
-  IOnloadingJobObject,
-} from '~models';
-import {
-  CerdentialsService,
-  EWONFlexyDeviceRegistrationService,
-  MicroserviceIntegrationService,
-  SyncOnloadJobService,
-} from '~services';
+} from '../../../constants/flexy-integration.constants';
+import { IOnloadingJobObject } from '../../../models/c8y-custom-objects.model';
+import { EwonFlexyStructure, FlexyIntegrated, FlexySettings } from '../../../models/flexy.model';
+import { MicroserviceIntegrationService } from '../../../services/c8y-microservice-talk2m-integration.service';
+import { CerdentialsService } from '../../../services/credentials.service';
+import { EWONFlexyDeviceRegistrationService } from '../../../services/ewon-flexy-device-registration.service';
+import { SyncOnloadJobService } from '../../../services/synchronize-job.service';
 
 enum step {
   FIRST = 0,
@@ -43,6 +37,7 @@ enum step {
 export class SynchjobModalComponent implements OnInit {
   @ViewChild(C8yStepper, { static: true })
   private _config: FlexySettings = {};
+
   isLoading: boolean;
   formGroupStepOne: FormGroup;
   formGroupStepTwo: FormGroup;
@@ -55,6 +50,7 @@ export class SynchjobModalComponent implements OnInit {
     pageSize: 1000,
     currentPage: 1,
   };
+
   newJob: IManagedObject;
   onClose: Subject<IManagedObject> = new Subject();
 
@@ -65,7 +61,7 @@ export class SynchjobModalComponent implements OnInit {
     private flexyCredentials: CerdentialsService,
     private bsModalRef: BsModalRef,
     private flexyRegistrationService: EWONFlexyDeviceRegistrationService,
-    private c8yMSService: MicroserviceIntegrationService,
+    private c8yMSService: MicroserviceIntegrationService
   ) {
     this.columns = this.getDefaultColumns();
     this.rows = [];
@@ -85,26 +81,24 @@ export class SynchjobModalComponent implements OnInit {
       options.forEach((option) => {
         this._config[option.key] = option.value;
       });
+
       if (this._config.token) {
-        const ewons: EwonFlexyStructure[] = await this.c8yMSService.getEwons(
-          this._config.token,
-        );
+        const ewons: EwonFlexyStructure[] = await this.c8yMSService.getEwons(this._config.token);
 
         for (const ewon of ewons) {
           try {
-            let isRegistered =
-              await this.flexyRegistrationService.isDeviceRegistered(
-                ewon.id + '',
-                FLEXY_EXTERNALID_TALK2M_PREFIX,
-                EXTERNALID_TALK2M_SERIALTYPE,
-              );
+            let isRegistered = await this.flexyRegistrationService.isDeviceRegistered(
+              ewon.id + '',
+              FLEXY_EXTERNALID_TALK2M_PREFIX,
+              EXTERNALID_TALK2M_SERIALTYPE
+            );
+
             if (!isRegistered) {
-              isRegistered =
-                await this.flexyRegistrationService.isDeviceRegistered(
-                  ewon.id + '',
-                  FLEXY_EXTERNALID_FLEXY_PREFIX,
-                  EXTERNALID_FLEXY_SERIALTYPE,
-                );
+              isRegistered = await this.flexyRegistrationService.isDeviceRegistered(
+                ewon.id + '',
+                FLEXY_EXTERNALID_FLEXY_PREFIX,
+                EXTERNALID_FLEXY_SERIALTYPE
+              );
             }
             ewon.registered = isRegistered
               ? FlexyIntegrated.Integrated
@@ -118,7 +112,7 @@ export class SynchjobModalComponent implements OnInit {
       } else {
         this.alert.warning(
           'Missing credentials to conntect.',
-          JSON.stringify({ t2mtoken: this._config.token }),
+          JSON.stringify({ t2mtoken: this._config.token })
         );
       }
       this.isLoading = false;
@@ -128,18 +122,22 @@ export class SynchjobModalComponent implements OnInit {
   async navigate(clickedStepIDX: number) {
     const { selectedIndex: selectedStepIDX } = this.stepper;
     const isMovingForward = clickedStepIDX > selectedStepIDX;
+
     if (isMovingForward) {
       this.onMovingForward(clickedStepIDX, selectedStepIDX);
     } else {
       this.onMovingBackward(clickedStepIDX, selectedStepIDX);
     }
   }
+
   onMovingForward(clickedStepIDX: number, selectedStepIDX: number) {
     this.stepper.next();
+
     if (clickedStepIDX === step.THIRD && selectedStepIDX === step.SECOND) {
       this.save();
     }
   }
+
   onMovingBackward(clickedStepIDX: number, selectedStepIDX: number) {
     if (clickedStepIDX === step.FIRST && selectedStepIDX === step.SECOND) {
       this.stepper.previous();

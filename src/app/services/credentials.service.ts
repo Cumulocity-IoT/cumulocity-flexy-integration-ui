@@ -1,21 +1,18 @@
 import { Injectable } from '@angular/core';
 import { ITenantOption, TenantOptionsService, UserService } from '@c8y/client';
-import { FLEXY_TENANTOPTIONS_CATEGORY } from '~constants';
-import { FlexySettings } from '~models';
+import { FLEXY_TENANTOPTIONS_CATEGORY } from '../constants/flexy-integration.constants';
+import { FlexySettings } from '../models/flexy.model';
 
 @Injectable({ providedIn: 'root' })
 export class CerdentialsService {
   constructor(
     private tenantOptionsService: TenantOptionsService,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   protected async getCategory(): Promise<string> {
     const user = await this.userService.current();
-    const base64 = btoa(user.data.id)
-      .replace(/=/g, '')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_');
+    const base64 = btoa(user.data.id).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 
     return FLEXY_TENANTOPTIONS_CATEGORY + '_' + base64;
   }
@@ -34,6 +31,7 @@ export class CerdentialsService {
         key: iterate,
         value: config[iterate],
       };
+
       this.tenantOptionsService.update(option);
     }
   }
@@ -48,7 +46,7 @@ export class CerdentialsService {
     const { data } = await this.tenantOptionsService.list(filter);
     const filteredData = data
       .filter((tmp) => tmp.category === category)
-      .map((tmp) => tmp as ITenantOption)
+      .map((tmp) => tmp)
       .filter((tmp) => tmp.key != 'credentials.password');
 
     return filteredData;

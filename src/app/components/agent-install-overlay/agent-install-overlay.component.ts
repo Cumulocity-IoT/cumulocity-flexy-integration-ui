@@ -1,21 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ModalLabels } from '@c8y/ngx-components';
 import { Subject } from 'rxjs';
-import {
-  EwonFlexyStructure,
-  FlexyConnectorRelease,
-  FlexyInstallProgressSteps,
-  FlexyInstallSteps,
-  FlexySettings,
-  InstallAgentForm,
-} from '~models';
-import { FlexyService } from '~services';
+import { InstallAgentForm } from '../../models/c8y-custom-objects.model';
+import { EwonFlexyStructure, FlexyConnectorRelease, FlexySettings } from '../../models/flexy.model';
+import { FlexyInstallProgressSteps, FlexyInstallSteps } from '../../models/install.model';
+import { FlexyService } from '../../services/flexy.service';
 
 @Component({
   selector: 'agent-install-overlay',
   templateUrl: './agent-install-overlay.component.html',
 })
 export class AgentInstallOverlayComponent implements OnInit {
+  private flexyService = inject(FlexyService);
+
   showAdvancedOptions = false;
   closeSubject = new Subject<InstallAgentForm>();
   showPassword = false;
@@ -27,6 +24,7 @@ export class AgentInstallOverlayComponent implements OnInit {
     ok: 'Install Agent',
     cancel: 'Cancel',
   };
+
   installProcessSteps: FlexyInstallProgressSteps[] = [
     {
       id: FlexyInstallSteps.REQUEST_SN,
@@ -84,6 +82,7 @@ export class AgentInstallOverlayComponent implements OnInit {
   set devices(devices: EwonFlexyStructure[]) {
     this._devices = devices;
   }
+
   get devices(): EwonFlexyStructure[] {
     return this._devices;
   }
@@ -91,40 +90,35 @@ export class AgentInstallOverlayComponent implements OnInit {
   set config(config: FlexySettings) {
     this._config = config;
   }
+
   get config(): FlexySettings {
     return this._config;
   }
 
   private _devices: EwonFlexyStructure[];
-  private _config: FlexySettings;
+  private _config: FlexySettings = {
+    url: {
+      connector: '',
+      jvmrun: '',
+      cumulocity: '',
+    },
+    deviceUsername: '',
+    devicePassword: '',
+    c8yHost: '',
+    c8yPort: null,
+    c8yTenant: '',
+    c8yUsername: '',
+    c8yPassword: '',
+    installProcessSkipSteps: [],
+  };
 
-  constructor(private flexyService: FlexyService) {
-    // form content init
-    this._config = {
-      url: {
-        connector: '',
-        jvmrun: '',
-        cumulocity: '',
-      },
-      deviceUsername: '',
-      devicePassword: '',
-      c8yHost: '',
-      c8yPort: null,
-      c8yTenant: '',
-      c8yUsername: '',
-      c8yPassword: '',
-      installProcessSkipSteps: [],
-    };
-  }
-
-  async ngOnInit(): Promise<void> {
+  ngOnInit(): void {
     void this.fetchReleases();
   }
 
-  async submit(): Promise<void> {
-    const skipSteps = this.installProcessSteps
-      .filter((s) => s.selected === false)
-      .map((s) => s.id);
+  submit(): void {
+    const skipSteps = this.installProcessSteps.filter((s) => s.selected === false).map((s) => s.id);
+
     this.config.installProcessSkipSteps = skipSteps;
 
     this.closeSubject.next({ config: this.config, devices: this.devices });

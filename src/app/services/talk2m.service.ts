@@ -2,14 +2,14 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { has } from 'lodash';
 import { BehaviorSubject } from 'rxjs';
+import { PluginConfig } from '../models/plugin.model';
 import {
-  PluginConfig,
   TALK2M_BASEURL,
   TALK2M_DEVELOPERID,
   Talk2MAccount,
   Talk2mParameterParams,
   Talk2MUrlOptions,
-} from '~models';
+} from '../models/talk2m.model';
 
 @Injectable({ providedIn: 'root' })
 export class Talk2mService {
@@ -18,6 +18,7 @@ export class Talk2mService {
     this._session = session;
     this.session$.next(session);
   }
+
   get session(): PluginConfig['session'] {
     return this._session;
   }
@@ -26,6 +27,7 @@ export class Talk2mService {
     this._account = account;
     this.account$.next(account);
   }
+
   get account(): Talk2MAccount {
     return this._account;
   }
@@ -47,14 +49,12 @@ export class Talk2mService {
   async login(
     account: Talk2MAccount['accountName'],
     username: Talk2MUrlOptions['username'],
-    password: Talk2MUrlOptions['password'],
+    password: Talk2MUrlOptions['password']
   ): Promise<PluginConfig['session']> {
     const url = this.buildUrl('login', { account, username, password });
     const response = await this.get<any>(url, this.generateObserverHeader());
     const session =
-      !!response &&
-      response.hasOwnProperty('body') &&
-      response.body.hasOwnProperty('t2msession')
+      !!response && response.hasOwnProperty('body') && response.body.hasOwnProperty('t2msession')
         ? response.body.t2msession
         : null;
 
@@ -82,10 +82,7 @@ export class Talk2mService {
     return !!account;
   }
 
-  async getAccount(
-    session = this.session,
-    useCache = true,
-  ): Promise<Talk2MAccount> {
+  async getAccount(session = this.session, useCache = true): Promise<Talk2MAccount> {
     if (!session) throw Error('No session provided');
 
     if (useCache && this.account) return this.account;
@@ -93,7 +90,7 @@ export class Talk2mService {
     try {
       const response = await this.get<any>(
         this.buildUrl('getaccountinfo', { session }),
-        this.generateObserverHeader(),
+        this.generateObserverHeader()
       );
 
       this.account = response.body as Talk2MAccount;
@@ -111,7 +108,7 @@ export class Talk2mService {
     path: string,
     config: Talk2MUrlOptions = {},
     session = this.session,
-    developerId = TALK2M_DEVELOPERID,
+    developerId = TALK2M_DEVELOPERID
   ): string {
     let url = `/${path}`;
     const params = [];
@@ -129,12 +126,10 @@ export class Talk2mService {
 
     // inject parameters
     config[Talk2mParameterParams.DEVELOPER_ID] = developerId;
-    if (!!session && !has(config, 'session'))
-      config[Talk2mParameterParams.SESSION] = session;
+    if (!!session && !has(config, 'session')) config[Talk2mParameterParams.SESSION] = session;
 
     Object.keys(config).forEach((key) => {
-      if (keyList.hasOwnProperty(key))
-        params.push(`${keyList[key]}=${config[key]}`);
+      if (keyList.hasOwnProperty(key)) params.push(`${keyList[key]}=${config[key]}`);
       else params.push(`${key}=${config[key]}`);
     });
 
@@ -145,7 +140,7 @@ export class Talk2mService {
     return TALK2M_BASEURL + url;
   }
 
-  generateHeaderOptions(request = 'text/plain', response = 'text'): Object {
+  generateHeaderOptions(request = 'text/plain', response = 'text'): object {
     // TODO better return type
     return {
       headers: new HttpHeaders({ 'Content-Type': request }),

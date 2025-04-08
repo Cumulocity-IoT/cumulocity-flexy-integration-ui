@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { Subscription } from 'rxjs';
-import { PluginService, Talk2mService } from '~services';
+import { PluginService } from '../../services/plugin.service';
+import { Talk2mService } from '../../services/talk2m.service';
 import { SettingsComponent } from '../settings/settings.component';
 
 @Component({
@@ -16,7 +17,7 @@ export class Talk2mConnectionStatusComponent implements OnInit, OnDestroy {
   constructor(
     private talk2mService: Talk2mService,
     private pluginService: PluginService,
-    private modalService: BsModalService,
+    private modalService: BsModalService
   ) {}
 
   async ngOnInit(): Promise<void> {

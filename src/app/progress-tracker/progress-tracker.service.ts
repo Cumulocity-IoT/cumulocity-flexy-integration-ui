@@ -15,11 +15,11 @@ export class ProgressTrackerService {
     const track: ProgressTrack = {
       key,
       name,
-      history: []
+      history: [],
     };
     const subject: TrackSubject = {
       key,
-      track$: new BehaviorSubject(track)
+      track$: new BehaviorSubject(track),
     };
 
     this.tracks.push(subject);
@@ -72,6 +72,7 @@ export class ProgressTrackerService {
     }
 
     let track: ProgressTrack;
+
     this.tracks.forEach((t, index) => {
       if (t.key === key) {
         track = this.tracks.splice(index, 1)[0].track$.value;

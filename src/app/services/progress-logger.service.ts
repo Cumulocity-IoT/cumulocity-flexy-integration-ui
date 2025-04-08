@@ -1,19 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Subscriber } from 'rxjs';
-import { ProgressMessage } from '~models';
+import { ProgressMessage } from '../models/c8y-custom-objects.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProgressLoggerService {
   total = 0;
   observer$: Subscriber<ProgressMessage>;
 
-  constructor() {}
-
-  generateDeviceLogMessage(
-    deviceName: string,
-    deviceIndex: number,
-    message: string,
-  ): string {
+  generateDeviceLogMessage(deviceName: string, deviceIndex: number, message: string): string {
     return deviceIndex < 0
       ? message
       : `[${deviceIndex + 1}/${this.total}] ${deviceName}: ${message}`;
@@ -25,6 +19,7 @@ export class ProgressLoggerService {
       message: '',
       type: 'info',
     };
+
     this.observer$.next({ ...defaultConfig, ...message });
   }
 
@@ -45,7 +40,7 @@ export class ProgressLoggerService {
     deviceName: string,
     deviceIndex: number,
     message: string,
-    details?: string,
+    details?: string
   ): void {
     this.setLogMessage({
       message: this.generateDeviceLogMessage(deviceName, deviceIndex, message),
@@ -59,7 +54,7 @@ export class ProgressLoggerService {
     deviceName: string,
     deviceIndex: number,
     message: string,
-    icon?: string,
+    icon?: string
   ): void {
     this.setLogMessage({
       message: this.generateDeviceLogMessage(deviceName, deviceIndex, message),

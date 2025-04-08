@@ -1,23 +1,18 @@
 import { Injectable } from '@angular/core';
-import {
-  FetchClient,
-  IFetchOptions,
-  IFetchResponse,
-  TenantService,
-} from '@c8y/client';
+import { FetchClient, IFetchOptions, IFetchResponse, TenantService } from '@c8y/client';
 import {
   C8Y_MICROSERVICE_ENDPOINT,
   CHECKFILES_OPTIONS,
   GET_OPTIONS,
   ONLOAD_OPTIONS,
-} from '~constants';
-import { TALK2M_DEVELOPERID } from '~models';
+} from '../constants/flexy-integration.constants';
+import { TALK2M_DEVELOPERID } from '../models/talk2m.model';
 
 @Injectable({ providedIn: 'root' })
 export class MicroserviceIntegrationService {
   constructor(
     private tenantService: TenantService,
-    private fetch: FetchClient,
+    private fetch: FetchClient
   ) {}
 
   async isMicroserviceEnabled(): Promise<boolean> {
@@ -25,11 +20,11 @@ export class MicroserviceIntegrationService {
     const result = await this.tenantService.current().then((result) => {
       if (result.data['applications']) {
         const app = result.data['applications']['references'].find(
-          (element) =>
-            element.application.key == C8Y_MICROSERVICE_ENDPOINT.APPKEY,
+          (element) => element.application.key == C8Y_MICROSERVICE_ENDPOINT.APPKEY
         );
         return app ? true : false;
       }
+
       return null;
     });
     return result;
@@ -39,11 +34,11 @@ export class MicroserviceIntegrationService {
     const result = await this.tenantService.current().then((result) => {
       if (result.data['applications']) {
         const app = result.data['applications']['references'].find(
-          (element) =>
-            element.application.key == C8Y_MICROSERVICE_ENDPOINT.APPKEY,
+          (element) => element.application.key == C8Y_MICROSERVICE_ENDPOINT.APPKEY
         );
         return app ? app.application.contextPath : null;
       }
+
       return null;
     });
     return result;
@@ -52,30 +47,21 @@ export class MicroserviceIntegrationService {
   async getEwons(token: string): Promise<any> {
     const data = { TOKEN: token, DEVID: TALK2M_DEVELOPERID };
     //let endpoint = C8Y_MICROSERVICE_ENDPOINT.URL.GET_EWONS;
-    let endpoint = this.buildEndpoint(
-      C8Y_MICROSERVICE_ENDPOINT.URL.GET_EWONS,
-      data,
-    );
+    const endpoint = this.buildEndpoint(C8Y_MICROSERVICE_ENDPOINT.URL.GET_EWONS, data);
 
-    const result = await this.fetch
-      .fetch(endpoint, GET_OPTIONS)
-      .then(async (response) => {
-        return await response.json().then((details) => {
-          return response && details.hasOwnProperty('ewons') ? details : null;
-        });
+    const result = await this.fetch.fetch(endpoint, GET_OPTIONS).then(async (response) => {
+      return await response.json().then((details) => {
+        return response && details.hasOwnProperty('ewons') ? details : null;
       });
+    });
 
     return result.ewons;
   }
 
-  async onloadNow(
-    token: string,
-    jobId: string,
-    tenantId: string,
-  ): Promise<IFetchResponse> {
+  async onloadNow(token: string, jobId: string, tenantId: string): Promise<IFetchResponse> {
     const result = await this.fetch.fetch(
       C8Y_MICROSERVICE_ENDPOINT.URL.ONLOAD_NOW,
-      this.buildHeader(ONLOAD_OPTIONS.headers, token, jobId, tenantId),
+      this.buildHeader(ONLOAD_OPTIONS.headers, token, jobId, tenantId)
     );
 
     return result;
@@ -84,15 +70,13 @@ export class MicroserviceIntegrationService {
   async checkFiles(filesUrl: string): Promise<boolean> {
     const result = await this.fetch.fetch(
       C8Y_MICROSERVICE_ENDPOINT.URL.CHECK_FILES,
-      this.buildHeadersForCheckFile(CHECKFILES_OPTIONS.headers, filesUrl),
+      this.buildHeadersForCheckFile(CHECKFILES_OPTIONS.headers, filesUrl)
     );
 
     return result
       .json()
       .then((body) =>
-        result.status === 200
-          ? (body as boolean)
-          : Promise.reject('Microservice not available'),
+        result.status === 200 ? (body as boolean) : Promise.reject('Microservice not available')
       );
   }
 
@@ -108,24 +92,22 @@ export class MicroserviceIntegrationService {
       }
     }
 
-    let options: IFetchOptions = CHECKFILES_OPTIONS;
+    const options: IFetchOptions = CHECKFILES_OPTIONS;
 
     options.headers = headers;
+
     return options;
   }
 
-  protected buildHeader(
-    headers: any,
-    token: string,
-    jobId: string,
-    tenantId: string,
-  ): any {
+  protected buildHeader(headers: any, token: string, jobId: string, tenantId: string): any {
     const hd = JSON.stringify(headers);
+
     for (const key in C8Y_MICROSERVICE_ENDPOINT.VARIABLE) {
       const variable: string = C8Y_MICROSERVICE_ENDPOINT.VARIABLE[key];
       const index = hd.indexOf(variable);
 
       const key_header = variable.replace('{', '').replace('}', '');
+
       if (index >= 0 && hd.indexOf(key_header) >= 0) {
         if (variable.indexOf('token') >= 0) {
           headers[key_header] = headers[key_header].replace(variable, token);
@@ -136,13 +118,16 @@ export class MicroserviceIntegrationService {
         }
       }
     }
-    let options: IFetchOptions = ONLOAD_OPTIONS;
+    const options: IFetchOptions = ONLOAD_OPTIONS;
+
     options.headers = headers;
+
     return options;
   }
 
   protected buildEndpoint(endpoint: string, data: any): string {
     const ep = endpoint;
+
     for (const key in C8Y_MICROSERVICE_ENDPOINT.VARIABLE) {
       const variable = C8Y_MICROSERVICE_ENDPOINT.VARIABLE[key];
       const index = ep.indexOf(variable);

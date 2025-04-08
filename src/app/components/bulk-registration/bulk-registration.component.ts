@@ -2,13 +2,11 @@ import { Component, ViewChild } from '@angular/core';
 import { AlertService } from '@c8y/ngx-components';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { Subscription } from 'rxjs';
-import {
-  EwonFlexyStructure,
-  FlexySettings,
-  InstallAgentForm,
-  ProgressMessage,
-} from '~models';
-import { FlexyService, InstallAgentService, Talk2mService } from '~services';
+import { InstallAgentForm, ProgressMessage } from '../../models/c8y-custom-objects.model';
+import { EwonFlexyStructure, FlexySettings } from '../../models/flexy.model';
+import { FlexyService } from '../../services/flexy.service';
+import { InstallAgentService } from '../../services/install-agent.service';
+import { Talk2mService } from '../../services/talk2m.service';
 import { AgentInstallOverlayComponent } from '../agent-install-overlay/agent-install-overlay.component';
 import { SettingsComponent } from '../settings/settings.component';
 import { RegistrationDeviceGridComponent } from './registration-device-grid/registration-device-grid.component';
@@ -37,13 +35,13 @@ export class BulkRegistrationComponent {
     private modalService: BsModalService,
     private flexyService: FlexyService,
     private installAgentService: InstallAgentService,
-    private talk2mService: Talk2mService,
+    private talk2mService: Talk2mService
   ) {}
 
   async ngOnInit() {
     this.talk2mConnected = !!this.talk2mService.session;
     this.sessionSubscription = this.talk2mService.session$.subscribe(
-      (session) => (this.talk2mConnected = !!session),
+      (session) => (this.talk2mConnected = !!session)
     );
   }
 
@@ -59,9 +57,7 @@ export class BulkRegistrationComponent {
       ...{ deviceUsername: 'adm', devicePassword: 'adm' },
     }; // TODO remove
 
-    devices.forEach((device) =>
-      reboots.push(this.flexyService.reboot(device.encodedName, config)),
-    );
+    devices.forEach((device) => reboots.push(this.flexyService.reboot(device.encodedName, config)));
 
     Promise.all(reboots)
       .then(() => {
@@ -109,7 +105,7 @@ export class BulkRegistrationComponent {
       () => {
         this.installInProgress = false;
         this.deviceGrid.resetSelection();
-      },
+      }
     );
   }
 }

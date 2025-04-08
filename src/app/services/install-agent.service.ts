@@ -12,14 +12,10 @@ import {
   EXTERNALID_TALK2M_SERIALTYPE,
   FLEXY_EXTERNALID_FLEXY_PREFIX,
   FLEXY_EXTERNALID_TALK2M_PREFIX,
-} from '~constants';
-import {
-  EwonFlexyStructure,
-  FlexyCommandFile,
-  FlexyInstallSteps,
-  FlexySettings,
-  ProgressMessage,
-} from '~models';
+} from '../constants/flexy-integration.constants';
+import { ProgressMessage } from '../models/c8y-custom-objects.model';
+import { EwonFlexyStructure, FlexyCommandFile, FlexySettings } from '../models/flexy.model';
+import { FlexyInstallSteps } from '../models/install.model';
 import { EWONFlexyDeviceRegistrationService } from './ewon-flexy-device-registration.service';
 import { ExternalIDService } from './external-id.service';
 import { FlexyService } from './flexy.service';
@@ -48,25 +44,20 @@ export class InstallAgentService {
     private externalIDService: ExternalIDService,
     private progressLogger: ProgressLoggerService,
     private flexyRegistrationService: EWONFlexyDeviceRegistrationService,
-    private deviceRegistrationService: DeviceRegistrationService,
+    private deviceRegistrationService: DeviceRegistrationService
   ) {}
 
-  install(
-    devices: EwonFlexyStructure[],
-    config: FlexySettings,
-  ): Observable<ProgressMessage> {
+  install(devices: EwonFlexyStructure[], config: FlexySettings): Observable<ProgressMessage> {
     const devicePromises = [];
 
     return new Observable<ProgressMessage>((observer) => {
       this.progressLogger.observer$ = observer;
 
       // input validation
-      if (!devices.length)
-        this.progressLogger.sendErrorMessage('No eligible devices available.');
-      if (!config.deviceUsername)
-        this.progressLogger.sendErrorMessage('Device username missing.');
-      if (!config.devicePassword)
-        this.progressLogger.sendErrorMessage('Device password missing.');
+      if (!devices.length) this.progressLogger.sendErrorMessage('No eligible devices available.');
+      if (!config.deviceUsername) this.progressLogger.sendErrorMessage('Device username missing.');
+      if (!config.devicePassword) this.progressLogger.sendErrorMessage('Device password missing.');
+
       if (!config.url) {
         this.progressLogger.sendErrorMessage('File URLs missing.');
       } else {
@@ -81,12 +72,8 @@ export class InstallAgentService {
       this.progressLogger.total = devices.length;
       this.config = config;
 
-      devices.forEach((device, index) =>
-        devicePromises.push(this.installAgent(device, index)),
-      );
-      Promise.all(devicePromises).then(() =>
-        this.progressLogger.observer$.complete(),
-      );
+      devices.forEach((device, index) => devicePromises.push(this.installAgent(device, index)));
+      Promise.all(devicePromises).then(() => this.progressLogger.observer$.complete());
     });
   }
 
@@ -118,13 +105,13 @@ export class InstallAgentService {
     index: number,
     encodedName: string,
     config = this.config,
-    log = true,
+    log = true
   ): Promise<string> {
     try {
       return await this.flexyService.getSerial(
         encodedName,
         config.deviceUsername,
-        config.devicePassword,
+        config.devicePassword
       );
     } catch (error: any) {
       if (log) {
@@ -133,9 +120,10 @@ export class InstallAgentService {
           deviceName,
           index,
           'Could not obtain serialnumber.',
-          error.message,
+          error.message
         );
       }
+
       return null;
     }
   }
@@ -146,7 +134,7 @@ export class InstallAgentService {
     encodedName: string,
     config = this.config,
     attempts = this.rebootAttempts,
-    timeout = this.rebootInterval,
+    timeout = this.rebootInterval
   ): Promise<boolean> {
     let serial: string;
 
@@ -155,17 +143,11 @@ export class InstallAgentService {
         deviceName,
         index,
         `Waiting for device to reboot.<br><b>Attempt ${i} of ${attempts}</b>`,
-        'clock1',
+        'clock1'
       );
 
       try {
-        serial = await this.getSerial(
-          deviceName,
-          index,
-          encodedName,
-          config,
-          false,
-        );
+        serial = await this.getSerial(deviceName, index, encodedName, config, false);
       } catch (error) {
         console.info('device online check response', {
           attempt: i,
@@ -179,8 +161,9 @@ export class InstallAgentService {
           deviceName,
           index,
           `Device <span class="text-success">is online</span>.`,
-          'connected',
+          'connected'
         );
+
         return true;
       } else {
         await this.sleep(timeout);
@@ -190,9 +173,7 @@ export class InstallAgentService {
     return false;
   }
 
-  private async getExternalIDs(
-    device: EwonFlexyStructure,
-  ): Promise<IExternalIdentity[]> {
+  private async getExternalIDs(device: EwonFlexyStructure): Promise<IExternalIdentity[]> {
     let flexy: IExternalIdentity;
 
     try {
@@ -202,11 +183,9 @@ export class InstallAgentService {
     }
 
     let talk2m: IExternalIdentity;
+
     try {
-      talk2m = await this.flexyService.getExternalID(
-        device.serial,
-        EXTERNALID_TALK2M_SERIALTYPE,
-      );
+      talk2m = await this.flexyService.getExternalID(device.serial, EXTERNALID_TALK2M_SERIALTYPE);
     } catch (error) {
       talk2m = null;
     }
@@ -214,9 +193,7 @@ export class InstallAgentService {
     return [flexy, talk2m];
   }
 
-  private async checkIfDeviceConectedViaAgent(
-    device: EwonFlexyStructure,
-  ): Promise<boolean> {
+  private async checkIfDeviceConectedViaAgent(device: EwonFlexyStructure): Promise<boolean> {
     const [flexy, talk2m] = await this.getExternalIDs(device);
 
     if (flexy) {
@@ -226,17 +203,17 @@ export class InstallAgentService {
         - discontinue the agent installation process
       */
       const deviceMO = await this.externalIDService.getDeviceByIdentity(flexy);
+
       if (deviceMO && this.deviceHasAgentFragment(deviceMO)) {
         if (!talk2m) {
           void (await this.flexyService.createExternalIDForDevice(
             deviceMO,
             device.serial,
-            EXTERNALID_TALK2M_SERIALTYPE,
+            EXTERNALID_TALK2M_SERIALTYPE
           ));
         }
-        return Promise.reject(
-          'Already connected: Device MO has an external Flexy ID.',
-        );
+
+        return Promise.reject('Already connected: Device MO has an external Flexy ID.');
       }
     } else if (talk2m) {
       /*
@@ -244,16 +221,13 @@ export class InstallAgentService {
         - discontinue the agent installation process
       */
       const deviceMO = await this.externalIDService.getDeviceByIdentity(talk2m);
-      const externalIDs =
-        await await this.externalIDService.getExternalIDsForDevice(deviceMO);
+      const externalIDs = await await this.externalIDService.getExternalIDsForDevice(deviceMO);
       const flexyIDs = externalIDs.filter(
-        (id) => id.externalId.indexOf(FLEXY_EXTERNALID_FLEXY_PREFIX) >= 0,
+        (id) => id.externalId.indexOf(FLEXY_EXTERNALID_FLEXY_PREFIX) >= 0
       );
 
       if (flexyIDs.length)
-        return Promise.reject(
-          'Already connected: Device MO has an external Talk2M ID.',
-        );
+        return Promise.reject('Already connected: Device MO has an external Talk2M ID.');
     }
 
     return Promise.resolve(false);
@@ -263,7 +237,7 @@ export class InstallAgentService {
     device: EwonFlexyStructure,
     index: number,
     attempts = this.externalIdPollAttempts,
-    timeout = this.externalIdPollInterval,
+    timeout = this.externalIdPollInterval
   ): Promise<IManagedObject> {
     let deviceMO;
 
@@ -272,12 +246,12 @@ export class InstallAgentService {
         device.name,
         index,
         `Polling for Device.<br><b>Attempt ${i} of ${attempts}</b>`,
-        'file-view',
+        'file-view'
       );
 
       try {
         deviceMO = await this.flexyService.getDeviceByExternalID(
-          FLEXY_EXTERNALID_FLEXY_PREFIX + device.serial,
+          FLEXY_EXTERNALID_FLEXY_PREFIX + device.serial
         );
       } catch (error) {
         Promise.reject('Could not find Device Managed Object.');
@@ -291,8 +265,9 @@ export class InstallAgentService {
             device.name,
             index,
             `Device <span class="text-error">not found</span>.`,
-            'times',
+            'times'
           );
+
           return null;
         } else {
           await this.sleep(timeout);
@@ -303,24 +278,22 @@ export class InstallAgentService {
     return null;
   }
 
-  private async setExternalID(
-    device: EwonFlexyStructure,
-    index: number,
-  ): Promise<boolean> {
+  private async setExternalID(device: EwonFlexyStructure, index: number): Promise<boolean> {
     const deviceMO = await this.pollForDevice(device, index);
+
     if (!deviceMO) return false;
 
     let externalIDs;
+
     try {
-      externalIDs =
-        await this.externalIDService.getExternalIDsForDevice(deviceMO);
+      externalIDs = await this.externalIDService.getExternalIDsForDevice(deviceMO);
     } catch (error) {
       Promise.reject('Could not find Device by External ID.');
     }
     if (!externalIDs) return false;
 
     const takl2mIDs = externalIDs.filter(
-      (id) => id.externalId.indexOf(FLEXY_EXTERNALID_TALK2M_PREFIX) >= 0,
+      (id) => id.externalId.indexOf(FLEXY_EXTERNALID_TALK2M_PREFIX) >= 0
     );
 
     if (takl2mIDs) Promise.reject('Device already has Talk2M external ID set.');
@@ -328,12 +301,10 @@ export class InstallAgentService {
     const externalID = await this.flexyService.createExternalIDForDevice(
       deviceMO,
       device.serial,
-      EXTERNALID_TALK2M_SERIALTYPE,
+      EXTERNALID_TALK2M_SERIALTYPE
     );
 
-    return (
-      externalID.externalId === FLEXY_EXTERNALID_TALK2M_PREFIX + device.serial
-    );
+    return externalID.externalId === FLEXY_EXTERNALID_TALK2M_PREFIX + device.serial;
   }
 
   private async loadFile(
@@ -342,19 +313,20 @@ export class InstallAgentService {
     step: string,
     deviceEncodedName: string,
     filename: string,
-    config = this.config,
+    config = this.config
   ): Promise<string> {
     this.progressLogger.sendDeviceSimpleMessage(
       deviceName,
       index,
       `<b>Step ${step}</b> - Loading file from<br><code>${filename}</code>`,
-      'download-archive',
+      'download-archive'
     );
+
     try {
       return await this.flexyService.installSoftware(
         this.generateFlexCommandFileConfig(filename),
         deviceEncodedName,
-        config,
+        config
       );
     } catch (error: any) {
       console.error('Could not install file', error);
@@ -362,8 +334,9 @@ export class InstallAgentService {
         deviceName,
         index,
         `Could not install file <code>${filename}</code>.`,
-        error.message,
+        error.message
       );
+
       return null;
     }
   }
@@ -371,7 +344,7 @@ export class InstallAgentService {
   private async loadFilesOntoDevice(
     device: EwonFlexyStructure,
     index: number,
-    config = this.config,
+    config = this.config
   ): Promise<boolean> {
     try {
       // connector
@@ -380,8 +353,9 @@ export class InstallAgentService {
         index,
         '4.1',
         device.encodedName,
-        config.url.connector,
+        config.url.connector
       );
+
       if (!connector) return false;
 
       // JVMrun
@@ -390,8 +364,9 @@ export class InstallAgentService {
         index,
         '4.2',
         device.encodedName,
-        config.url.jvmrun,
+        config.url.jvmrun
       );
+
       if (!jvmrun) return false;
 
       // (optional) c8y config
@@ -401,8 +376,9 @@ export class InstallAgentService {
           index,
           '4.3',
           device.encodedName,
-          config.url.cumulocity,
+          config.url.cumulocity
         );
+
         if (!c8yconfig) return false;
       }
 
@@ -412,8 +388,9 @@ export class InstallAgentService {
         device.name,
         index,
         'Could not reboot device',
-        error.message,
+        error.message
       );
+
       return false;
     }
   }
@@ -424,7 +401,7 @@ export class InstallAgentService {
     config = this.config,
     file: string,
     attempts = this.filePollAttempts,
-    timeout = this.filePollInterval,
+    timeout = this.filePollInterval
   ): Promise<boolean> {
     const filename = this.getFilenameFromUrl(file);
     let fileExists = false;
@@ -436,13 +413,9 @@ export class InstallAgentService {
           device.name,
           index,
           `Polling for file <span class="text-warning">"${filename}"</span>.<br><b>Attempt ${i} of ${attempts}</b>`,
-          'file-view',
+          'file-view'
         );
-        fileExists = await this.flexyService.downloadSoftware(
-          filename,
-          device.name,
-          config,
-        );
+        fileExists = await this.flexyService.downloadSoftware(filename, device.name, config);
       } catch (error: any) {
         // abort on bad gateway (should be covered by device online check – no feedback)
         if (error.status === 502) return false;
@@ -454,8 +427,9 @@ export class InstallAgentService {
           device.name,
           index,
           `File <span class="text-success">"${filename}" found</span>.`,
-          'check-document',
+          'check-document'
         );
+
         return true;
       } else {
         // next attempt or failure
@@ -464,8 +438,9 @@ export class InstallAgentService {
             device.name,
             index,
             `File <span class="text-error">"${filename}" not found</span>.`,
-            'delete-file',
+            'delete-file'
           );
+
           return false;
         } else {
           await this.sleep(timeout);
@@ -480,7 +455,7 @@ export class InstallAgentService {
     device: EwonFlexyStructure,
     index: number,
     config = this.config,
-    attempts = this.filePollAttempts,
+    attempts = this.filePollAttempts
   ): Promise<boolean> {
     const files = [
       this.pollForFile(device, index, config, config.url.connector, attempts),
@@ -488,24 +463,13 @@ export class InstallAgentService {
     ];
 
     if (config.url.hasOwnProperty('cumulocity') && !!config.url.cumulocity) {
-      files.push(
-        this.pollForFile(
-          device,
-          index,
-          config,
-          config.url.cumulocity,
-          attempts,
-        ),
-      );
+      files.push(this.pollForFile(device, index, config, config.url.cumulocity, attempts));
     }
 
     return Promise.all(files).then((res) => res.reduce((p, c) => p && c, true));
   }
 
-  private async registerFlexy(
-    device: EwonFlexyStructure,
-    index: number,
-  ): Promise<boolean> {
+  private async registerFlexy(device: EwonFlexyStructure, index: number): Promise<boolean> {
     // device was already registered?
     const isRegistered = this.flexyService.isRegistered(device);
 
@@ -513,8 +477,9 @@ export class InstallAgentService {
       this.progressLogger.sendDeviceErrorMessage(
         device.name,
         index,
-        'Device is already registered.',
+        'Device is already registered.'
       );
+
       return false;
     }
 
@@ -525,13 +490,14 @@ export class InstallAgentService {
       return true;
     } catch (error) {
       this.progressLogger.sendDeviceErrorMessage(device.name, index, 'ERR.');
+
       return false;
     }
   }
 
   private async sendConnectionConfig(
     device: EwonFlexyStructure,
-    config = this.config,
+    config = this.config
   ): Promise<boolean> {
     return await this.flexyService.sendConfig(device.name, config);
   }
@@ -540,7 +506,7 @@ export class InstallAgentService {
     device: EwonFlexyStructure,
     index: number,
     attempts = this.registrationPollAttempts,
-    interval = this.registrationPollInterval,
+    interval = this.registrationPollInterval
   ): Promise<IDeviceRegistration> {
     let openRegistration: IDeviceRegistration;
 
@@ -550,14 +516,13 @@ export class InstallAgentService {
           device.name,
           index,
           `Polling for open Device Registration.<br><b>Attempt ${i} of ${attempts}</b>`,
-          'file-view',
+          'file-view'
         );
 
-        openRegistration =
-          await this.flexyRegistrationService.getOpenRegistrationsForDevice(
-            device.serial,
-            true,
-          );
+        openRegistration = await this.flexyRegistrationService.getOpenRegistrationsForDevice(
+          device.serial,
+          true
+        );
       } catch (error) {
         console.log(error);
       }
@@ -577,14 +542,8 @@ export class InstallAgentService {
     return null;
   }
 
-  private async acceptRegistration(
-    device: EwonFlexyStructure,
-    index: number,
-  ): Promise<boolean> {
-    const openRegistration = await this.pollForDeviceRegistration(
-      device,
-      index,
-    );
+  private async acceptRegistration(device: EwonFlexyStructure, index: number): Promise<boolean> {
+    const openRegistration = await this.pollForDeviceRegistration(device, index);
 
     if (!openRegistration) return false;
 
@@ -595,7 +554,7 @@ export class InstallAgentService {
         device.name,
         index,
         `Device <span class="text-success">Registration accepted</span>.`,
-        'device-connect',
+        'device-connect'
       );
     } catch (error) {
       this.progressLogger.sendDeviceErrorMessage(device.name, index, 'ERR.');
@@ -606,7 +565,7 @@ export class InstallAgentService {
 
   private skipStepCheck(
     step: FlexyInstallSteps,
-    config = this.config.installProcessSkipSteps,
+    config = this.config.installProcessSkipSteps
   ): boolean {
     return config.includes(step);
   }
@@ -615,16 +574,14 @@ export class InstallAgentService {
   private async installAgent(
     device: EwonFlexyStructure,
     index: number,
-    config = this.config,
+    config = this.config
   ): Promise<string | boolean> {
     const isC8yDevice = device.hasOwnProperty('source') && !!device.source;
     const isT2mDevice = device.hasOwnProperty('id') && !!device.id;
 
     try {
-      if (isC8yDevice && !isT2mDevice)
-        throw new Error('Not connected to Talk2M.');
-      if (!device.status || device.status !== 'online')
-        throw new Error('Device is not online.');
+      if (isC8yDevice && !isT2mDevice) throw new Error('Not connected to Talk2M.');
+      if (!device.status || device.status !== 'online') throw new Error('Device is not online.');
 
       // 1. request SN (and online-check)
       if (!this.skipStepCheck(FlexyInstallSteps.REQUEST_SN)) {
@@ -632,13 +589,9 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 1</b> - Requesting Serial',
-          'certificate',
+          'certificate'
         );
-        const serial = await this.getSerial(
-          device.name,
-          index,
-          device.encodedName,
-        );
+        const serial = await this.getSerial(device.name, index, device.encodedName);
 
         if (!serial) return null;
         device.serial = serial;
@@ -650,24 +603,24 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 2</b> - Check if device was already connected via agent.',
-          'plug',
+          'plug'
         );
-        const connectedViaAgent =
-          await this.checkIfDeviceConectedViaAgent(device);
+        const connectedViaAgent = await this.checkIfDeviceConectedViaAgent(device);
 
         if (connectedViaAgent) {
           this.progressLogger.sendDeviceErrorMessage(
             device.name,
             index,
-            'Device already connected via Agent.',
+            'Device already connected via Agent.'
           );
+
           return null;
         } else {
           this.progressLogger.sendDeviceSimpleMessage(
             device.name,
             index,
             'Device has <span class="text-success">not been connected</span> via agent.',
-            'check',
+            'check'
           );
         }
       }
@@ -678,21 +631,17 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 3</b> - Check for preexisting files',
-          'search',
+          'search'
         );
-        const filesExistAlready = await this.checkForLoadedFiles(
-          device,
-          index,
-          config,
-          1,
-        );
+        const filesExistAlready = await this.checkForLoadedFiles(device, index, config, 1);
 
         if (filesExistAlready) {
           this.progressLogger.sendDeviceErrorMessage(
             device.name,
             index,
-            `File(s) already exist on device.`,
+            `File(s) already exist on device.`
           );
+
           return null;
         }
       }
@@ -703,7 +652,7 @@ export class InstallAgentService {
           device.name,
           index,
           `<b>Step 4</b> - Download files`,
-          'download-archive',
+          'download-archive'
         );
         const files = await this.loadFilesOntoDevice(device, index, config);
 
@@ -716,20 +665,17 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 5</b> - Check for downloaded files',
-          'cloud-download',
+          'cloud-download'
         );
-        const filesLoaded = await this.checkForLoadedFiles(
-          device,
-          index,
-          config,
-        );
+        const filesLoaded = await this.checkForLoadedFiles(device, index, config);
 
         if (!filesLoaded) {
           this.progressLogger.sendDeviceErrorMessage(
             device.name,
             index,
-            'Could not verify that all files were downloaded onto the device.',
+            'Could not verify that all files were downloaded onto the device.'
           );
+
           return null;
         }
       }
@@ -740,7 +686,7 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 6</b> - Register device',
-          'cloud-checked',
+          'cloud-checked'
         );
         const registered = await this.registerFlexy(device, index);
 
@@ -748,8 +694,9 @@ export class InstallAgentService {
           this.progressLogger.sendDeviceErrorMessage(
             device.name,
             index,
-            'Could not register the device.',
+            'Could not register the device.'
           );
+
           return null;
         }
       }
@@ -760,24 +707,18 @@ export class InstallAgentService {
           device.name,
           index,
           `<b>Step 7</b> - Reboot<br><small>Let's give the device a ${this.initialRebootDelay}sec headstart</small>`,
-          'refresh',
+          'refresh'
         );
         await this.sleep(this.initialRebootDelay);
 
         await this.flexyService.reboot(device.encodedName, config);
 
         // wait for reboot to finish (poll for serial)
-        const isOnline = await this.checkIfDeviceIsOnline(
-          device.name,
-          index,
-          device.encodedName,
-        );
+        const isOnline = await this.checkIfDeviceIsOnline(device.name, index, device.encodedName);
+
         if (!isOnline) {
-          this.progressLogger.sendDeviceErrorMessage(
-            device.name,
-            index,
-            'Device not online.',
-          );
+          this.progressLogger.sendDeviceErrorMessage(device.name, index, 'Device not online.');
+
           return null;
         }
       }
@@ -788,19 +729,17 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 8</b> - Send connection config to device',
-          'file-settings', // settings
+          'file-settings' // settings
         );
-        const connectionConfig = await this.sendConnectionConfig(
-          device,
-          config,
-        );
+        const connectionConfig = await this.sendConnectionConfig(device, config);
 
         if (!connectionConfig) {
           this.progressLogger.sendDeviceErrorMessage(
             device.name,
             index,
-            'Could not send config to device.',
+            'Could not send config to device.'
           );
+
           return null;
         }
       }
@@ -814,7 +753,7 @@ export class InstallAgentService {
           device.name,
           index,
           `<b>Step 9</b> - Config send delay<br><small>Let's give the device another 20sec for chages to take effect</small>`,
-          'refresh',
+          'refresh'
         );
         await this.sleep(20);
       }
@@ -825,7 +764,7 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 10</b> - Accept device registration',
-          'check',
+          'check'
         );
 
         const acceptRegistration = await this.acceptRegistration(device, index);
@@ -834,8 +773,9 @@ export class InstallAgentService {
           this.progressLogger.sendDeviceErrorMessage(
             device.name,
             index,
-            'Could not accept device registration.',
+            'Could not accept device registration.'
           );
+
           return null;
         }
       }
@@ -846,7 +786,7 @@ export class InstallAgentService {
           device.name,
           index,
           '<b>Step 11</b> - Add Talk2M external ID',
-          'add-tag',
+          'add-tag'
         );
 
         const externalID = await this.setExternalID(device, index);
@@ -855,7 +795,7 @@ export class InstallAgentService {
           this.progressLogger.sendDeviceErrorMessage(
             device.name,
             index,
-            'Could not add Talk2M external ID.',
+            'Could not add Talk2M external ID.'
           );
         }
       }
@@ -867,11 +807,12 @@ export class InstallAgentService {
       console.error('Failed to install', { error, device });
       // const message = typeof error === 'string' ? error : error.message; // TODO
       const message = error as string;
+
       this.progressLogger.sendDeviceErrorMessage(
         device.name,
         index,
         'Failed to install agent',
-        message,
+        message
       );
     }
 

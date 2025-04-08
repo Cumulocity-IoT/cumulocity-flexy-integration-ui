@@ -4,7 +4,7 @@ import { ProgressTrack, ProgressTrackItem } from '../progress-tracker.models';
 
 @Component({
   selector: 'progress-display',
-  templateUrl: './progress-display.component.html'
+  templateUrl: './progress-display.component.html',
 })
 export class ProgressDisplayComponent {
   progressName: ProgressTrack['name'] = 'Track 1';
@@ -17,7 +17,7 @@ export class ProgressDisplayComponent {
   addProgress(name: ProgressTrack['name']) {
     const track: Partial<ProgressTrack> = {
       name,
-      key: name.toLocaleLowerCase().replace(/(\W+\b)/g, '')
+      key: name.toLocaleLowerCase().replace(/(\W+\b)/g, ''),
     };
 
     if (!this.progressTracks.find((t) => t.key === track.key)) {
@@ -31,7 +31,10 @@ export class ProgressDisplayComponent {
     }
   }
 
-  message(text: ProgressTrackItem['message'] = 'Commodo Porta', key: ProgressTrack['key'] = this.selectedProgressKey) {
+  message(
+    text: ProgressTrackItem['message'] = 'Commodo Porta',
+    key: ProgressTrack['key'] = this.selectedProgressKey
+  ) {
     this.progressTrackerService.addMessage(key, text);
   }
 
@@ -53,8 +56,8 @@ export class ProgressDisplayComponent {
         iconClass: 'text-danger',
         badge: {
           status: 'danger',
-          text: 'Error'
-        }
+          text: 'Error',
+        },
       });
     }
   }
@@ -63,7 +66,7 @@ export class ProgressDisplayComponent {
     for (let i = 1; i <= count; i++) {
       this.progressTrackerService.addItem(key, {
         message: `${prefix}${i}/${count}`,
-        icon: 'clock1'
+        icon: 'clock1',
       });
 
       await this.sleep(delay);

@@ -25,34 +25,35 @@ export const DM_FRAGMENTTYPE_MO = 'c8y_HMSOnloadingJob';
 
 export const C8Y_MICROSERVICE_ENDPOINT = {
   URL: {
-    GET_EWONS: '/service/ewon-flexy-integration/datamailbox/getewons?t2mtoken={t2mtoken}&t2mdevid={t2mdevid}',
+    GET_EWONS:
+      '/service/ewon-flexy-integration/datamailbox/getewons?t2mtoken={t2mtoken}&t2mdevid={t2mdevid}',
     SYNC_DATA:
       '/service/ewon-flexy-integration/datamailbox/syncdata?t2mtoken={t2mtoken}&t2mdevid={t2mdevid}&tenantId={tenantId}',
     ONLOAD_NOW: '/service/ewon-flexy-integration/executejob',
-    CHECK_FILES: '/service/ewon-flexy-integration/checkFiles'
+    CHECK_FILES: '/service/ewon-flexy-integration/checkFiles',
   },
   VARIABLE: {
     TOKEN: '{t2mtoken}',
     DEVID: '{t2mdevid}',
     TENANTID: '{tenantId}',
     JOBID: '{jobId}',
-    FILESURL: '{filesUrl}'
+    FILESURL: '{filesUrl}',
   },
-  APPKEY: 'ewon-flexy-integration-key'
+  APPKEY: 'ewon-flexy-integration-key',
 };
 
 export const GET_OPTIONS: IFetchOptions = {
   method: 'GET',
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 };
 
 export const CHECKFILES_OPTIONS: IFetchOptions = {
   method: 'GET',
   headers: {
-    filesUrl: '{filesUrl}'
-  }
+    filesUrl: '{filesUrl}',
+  },
 };
 
 export const ONLOAD_OPTIONS: IFetchOptions = {
@@ -61,6 +62,6 @@ export const ONLOAD_OPTIONS: IFetchOptions = {
     'Content-Type': 'application/json',
     t2mtoken: '{t2mtoken}',
     jobId: '{jobId}',
-    tenantId: '{tenantId}'
-  }
+    tenantId: '{tenantId}',
+  },
 };

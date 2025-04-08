@@ -12,7 +12,7 @@ export default {
     dynamicOptionsUrl: true,
     remotes: {
       // 'plugin name from package.json': [ PluginModule ]
-      'cumulocity-release-notes-plugin': ['FlexyIntegrationPluginModule']
+      'cumulocity-release-notes-plugin': ['FlexyIntegrationPluginModule'],
     },
     package: 'plugin',
     isPackage: true,
@@ -22,9 +22,10 @@ export default {
         name: 'HMS Flexy Integrarion Plugin',
         module: 'FlexyIntegrationPluginModule',
         path: './src/app/plugin/flexy-integration.module.ts',
-        description: 'Provides an interface to register HMS Flexy devices from Talk2M into Cumulocity.'
-      }
-    ]
+        description:
+          'Provides an interface to register HMS Flexy devices from Talk2M into Cumulocity.',
+      },
+    ],
   },
   buildTime: {
     federation: [
@@ -42,7 +43,7 @@ export default {
       '@c8y/ngx-components',
       'ngx-bootstrap',
       '@ngx-translate/core',
-      '@ngx-formly/core'
-    ]
-  }
+      '@ngx-formly/core',
+    ],
+  },
 } as const satisfies ConfigurationOptions;

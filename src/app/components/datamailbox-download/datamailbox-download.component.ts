@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { IManagedObject } from '@c8y/client';
 import { AlertService } from '@c8y/ngx-components';
-import { FlexySettings } from '~models';
-import {
-  CerdentialsService,
-  MicroserviceIntegrationService,
-  SyncOnloadJobService,
-} from '~services';
+import { FlexySettings } from '../../models/flexy.model';
+import { MicroserviceIntegrationService } from '../../services/c8y-microservice-talk2m-integration.service';
+import { CerdentialsService } from '../../services/credentials.service';
+import { SyncOnloadJobService } from '../../services/synchronize-job.service';
 
 @Component({
   selector: 'app-datamailbox-download',
@@ -22,7 +20,7 @@ export class DataMailboxDownloadComponent implements OnInit {
     private alert: AlertService,
     private flexyCredentials: CerdentialsService,
     private c8yMSService: MicroserviceIntegrationService,
-    public syncJobService: SyncOnloadJobService,
+    public syncJobService: SyncOnloadJobService
   ) {
     this.isSessionConnected = false;
     this.isLoading = true;
@@ -34,9 +32,10 @@ export class DataMailboxDownloadComponent implements OnInit {
       options.forEach((option) => {
         this._config[option.key] = option.value;
       });
+
       if (this._config.token) {
-        this.isSessionConnected =
-          await this.c8yMSService.isMicroserviceEnabled();
+        this.isSessionConnected = await this.c8yMSService.isMicroserviceEnabled();
+
         if (!this.isSessionConnected) {
           this.alert.warning('Microservice is not available.');
         }
@@ -45,7 +44,7 @@ export class DataMailboxDownloadComponent implements OnInit {
           'Missing credentials to connect.',
           JSON.stringify({
             t2mtoken: this._config.token ? this._config.token : '',
-          }),
+          })
         );
       }
     });
@@ -64,6 +63,7 @@ export class DataMailboxDownloadComponent implements OnInit {
   async refreshListOnloadingJobs() {
     this.isLoading = true;
     const data = await this.syncJobService.listOnloadingJobs();
+
     this.listJobs = data;
     this.isLoading = false;
   }

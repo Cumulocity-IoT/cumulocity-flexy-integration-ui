@@ -5,20 +5,19 @@ import {
   FLEXY_DATAMAILBOX_PATH,
   FLEXY_PATH,
   FLEXY_REGISTRATION_PATH,
-} from '~constants';
-import { MicroserviceIntegrationService } from '~services';
+} from '../constants/flexy-integration.constants';
+import { MicroserviceIntegrationService } from '../services/c8y-microservice-talk2m-integration.service';
 
 @Injectable()
 export class FlexyTabFactory implements TabFactory {
   constructor(
     private router: Router,
-    private c8yMicroservice: MicroserviceIntegrationService,
+    private c8yMicroservice: MicroserviceIntegrationService
   ) {}
 
   async get(): Promise<Tab[]> {
     if (this.router.url.includes(`${FLEXY_PATH}`)) {
-      const isMicroserviceEnabled =
-        await this.c8yMicroservice.isMicroserviceEnabled();
+      const isMicroserviceEnabled = await this.c8yMicroservice.isMicroserviceEnabled();
       let tabs = [
         {
           path: `${FLEXY_PATH}/${FLEXY_REGISTRATION_PATH}`,
@@ -33,11 +32,14 @@ export class FlexyTabFactory implements TabFactory {
           priority: -2,
         },
       ];
+
       if (!isMicroserviceEnabled) {
         tabs = tabs.slice(0, -1);
       }
+
       return tabs;
     }
+
     return [];
   }
 }

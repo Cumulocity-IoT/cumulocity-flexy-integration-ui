@@ -5,8 +5,8 @@
     <c8y-li-timeline *ngFor="let log of track.history.slice().reverse()">
       <!-- date -->
       <small class="c8y-list--timeline__item__date">
-        {{ log.date | date : 'HH:mm:ss' }}
-        {{ log.date | date : '.SSS' }}
+        {{ log.date | date: 'HH:mm:ss' }}
+        {{ log.date | date: '.SSS' }}
       </small>
 
       <!-- body -->
@@ -21,7 +21,7 @@
               <span class="text-truncate-wrap" [innerHTML]="log.message"></span>
               <small *ngIf="log.details" [innerHTML]="log.details"></small>
             </div>
-            <span *ngIf="log.badge" class="label label-{{ log.badge.status }} m-l-auto m-t-4">
+            <span class="label label-{{ log.badge.status }} m-l-auto m-t-4" *ngIf="log.badge">
               {{ log.badge.text }}
             </span>
           </div>

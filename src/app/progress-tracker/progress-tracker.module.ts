@@ -13,10 +13,10 @@ import { ProgressGroupComponent } from './progress-group/progress-group.componen
     RouterModule.forChild([
       {
         path: 'progress',
-        component: ProgressDisplayComponent
-      }
-    ])
+        component: ProgressDisplayComponent,
+      },
+    ]),
   ],
-  declarations: [ProgressDisplayComponent, ProgressTrackerComponent, ProgressGroupComponent]
+  declarations: [ProgressDisplayComponent, ProgressTrackerComponent, ProgressGroupComponent],
 })
 export class ProgressTrackerModule {}

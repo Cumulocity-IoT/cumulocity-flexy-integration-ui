@@ -14,28 +14,23 @@ import {
 import { ButtonsModule } from 'ngx-bootstrap/buttons';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
-import {
-  AgentInstallOverlayComponent,
-  BulkRegistrationComponent,
-  DataMailboxDownloadComponent,
-  LoadingSpinnerComponent,
-  RegisteredCellRendererComponent,
-  RegistrationDeviceGridComponent,
-  SettingsComponent,
-  SynchjobCardComponent,
-  SynchjobModalComponent,
-  Talk2mConnectionStatusComponent,
-} from '../components';
+import { AgentInstallOverlayComponent } from '~components/agent-install-overlay/agent-install-overlay.component';
+import { BulkRegistrationComponent } from '~components/bulk-registration/bulk-registration.component';
+import { RegisteredCellRendererComponent } from '~components/bulk-registration/registration-device-grid/cell-renderer/registered/registered.cell-renderer.component';
+import { RegistrationDeviceGridComponent } from '~components/bulk-registration/registration-device-grid/registration-device-grid.component';
+import { DataMailboxDownloadComponent } from '~components/datamailbox-download/datamailbox-download.component';
+import { SynchjobCardComponent } from '~components/datamailbox-download/synchjob-card/synchjob-card.component';
+import { SynchjobModalComponent } from '~components/datamailbox-download/synchjob-modal/synchjob-modal.component';
+import { LoadingSpinnerComponent } from '~components/loading-spinner/loading-spinner.component';
+import { SettingsComponent } from '~components/settings/settings.component';
+import { Talk2mConnectionStatusComponent } from '~components/talk2m-connection-status/talk2m-connection-status.component';
 import {
   FLEXY_DATAMAILBOX_PATH,
   FLEXY_PATH,
   FLEXY_REGISTRATION_PATH,
 } from '../constants/flexy-integration.constants';
-import {
-  FlexyNavigationFactory,
-  Talk2mConnectionStatusActionFactory,
-} from '../factories';
-import { ProgressTrackerModule } from '../progress-tracker/progress-tracker.module';
+import { FlexyNavigationFactory } from '../factories/navigation.factory';
+import { Talk2mConnectionStatusActionFactory } from '../factories/talk2m-connection-status-action.factory';
 
 const components = [
   AgentInstallOverlayComponent,
@@ -106,7 +101,6 @@ const hooks = [
     CoreModule,
     TooltipModule,
     ButtonsModule,
-    ProgressTrackerModule,
   ],
   declarations: components,
   providers: [...hooks],

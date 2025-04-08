@@ -5,7 +5,7 @@ import { ProgressTrackerService } from '../progress-tracker.service';
 @Component({
   selector: 'progress-group',
   templateUrl: './progress-group.component.html',
-  styleUrls: ['./progress-group.component.less']
+  styleUrls: ['./progress-group.component.less'],
 })
 export class ProgressGroupComponent {
   @Input() alwaysShowTabs = false;
@@ -17,6 +17,7 @@ export class ProgressGroupComponent {
       this.setTrack(this._keys[0]);
     }
   }
+
   get keys(): ProgressTrack['key'][] {
     return this._keys;
   }
@@ -24,6 +25,7 @@ export class ProgressGroupComponent {
   @Input() set tab(tab: ProgressTrack['key']) {
     this.setTrack(tab);
   }
+
   get tab(): ProgressTrack['key'] {
     return this.activeTack;
   }
