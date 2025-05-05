@@ -1,0 +1,94 @@
+<div class="card">
+  <div class="card-actions">
+    <div class="dropdown" dropdown>
+      <button
+        class="btn btn-clean btn-icon dropdown-toggle c8y-dropodown"
+        type="button"
+        dropdownToggle
+      >
+        <span>
+          <i c8yIcon="menu-vertical"></i>
+        </span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-right" *dropdownMenu>
+        <li>
+          <button (click)="delete()" type="button">
+            <i class="dlt-c8y-icon-delete" c8yicon="delete"></i>
+            Delete
+          </button>
+        </li>
+        <li>
+          <button (click)="onloadNow()" type="button">
+            <i class="dlt-c8y-icon-cloud-connection" c8yicon="cloud-connection"></i>
+            Onload now
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="card-header separator">
+    <div class="card-icon">
+      <i class="c8y-icon c8y-icon-duocolor c8y-icon-saas"></i>
+    </div>
+    <div class="text-truncate card-title" title="title">
+      {{ title }}
+    </div>
+  </div>
+  <div class="bg-gray-lighter">
+    <div class="card-block separator d-flex">
+      <button
+        class="btn m-l-auto m-r-auto"
+        id="switch-toggle"
+        [(ngModel)]="toggleActive"
+        (click)="changeActive()"
+        type="button"
+        btnCheckbox
+      >
+        <ng-container>
+          <span *ngIf="!toggleActive">
+            <i class="dlt-c8y-icon-block" style="color: #58656d; padding-left: 1rem"></i>
+            Inactive
+          </span>
+          <span *ngIf="toggleActive">
+            <i class="dlt-c8y-icon-check" style="color: #008800; padding-left: 1rem"></i>
+            Active
+          </span>
+        </ng-container>
+      </button>
+    </div>
+  </div>
+  <div class="card-block">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <div class="col">
+          <p>{{ description }}</p>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="col-sm-6">
+          <p class="text-12 text-uppercase text-light text-muted">Schedule</p>
+        </div>
+        <div class="col-sm-6">
+          <p class="text-right">every hour at minute 15</p>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="col-sm-6">
+          <p class="text-12 text-uppercase text-light text-muted">Last Execution</p>
+        </div>
+        <div class="col-sm-6">
+          <p class="text-right">-</p>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="col-sm-6">
+          <p class="text-12 text-uppercase text-light text-muted">Next Execution</p>
+        </div>
+        <div class="col-sm-6">
+          <p class="text-right">-</p>
+        </div>
+      </li>
+      <li class="list-group-item"></li>
+    </ul>
+  </div>
+</div>

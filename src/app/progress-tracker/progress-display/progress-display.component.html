@@ -1,0 +1,40 @@
+<c8y-title>Progress Track Display Test</c8y-title>
+
+<div class="form-inline">
+  <form (ngSubmit)="addProgress(progressName)">
+    <div class="form-group">
+      <label id="track-name">Tack Name</label>
+      <input
+        class="form-control"
+        id="track-name"
+        [(ngModel)]="progressName"
+        type="text"
+        name="track-name"
+      />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Add</button>
+  </form>
+</div>
+
+<ng-container *ngIf="progressTracks.length">
+  <div class="row m-t-16">
+    <div class="col-md-3">
+      <select id="track" [(ngModel)]="selectedProgressKey">
+        <option *ngFor="let track of progressTracks" value="{{ track.key }}">
+          {{ track.name }}
+        </option>
+      </select>
+    </div>
+    <div class="col-md-9">
+      <button class="btn btn-default" (click)="message()" type="button">Add Item</button>
+      <button class="btn btn-default" (click)="addRandom()" type="button">Add Random</button>
+      <button class="btn btn-default" (click)="startProcess()" type="button">Start Process</button>
+      <button class="btn btn-error" (click)="removeTrack(selectedProgressKey)" type="button">
+        Remove Tack
+      </button>
+    </div>
+  </div>
+</ng-container>
+
+<progress-group [keys]="progressKeys"></progress-group>

@@ -1,0 +1,94 @@
+<c8y-modal [title]="'Settings' | translate" [customFooter]="true">
+  <form (ngSubmit)="submit()">
+    <div class="modal-body">
+      <fieldset>
+        <div class="legend form-block" translate>Talk2M Login</div>
+        <div class="form-group">
+          <label for="talk2m-account" translate>Account</label>
+          <input
+            class="form-control"
+            id="talk2m-account"
+            [(ngModel)]="config.account"
+            [disabled]="talk2mConnected"
+            type="text"
+            name="account"
+            autocomplete="account"
+            placeholder="Account name"
+          />
+        </div>
+        <div class="form-group">
+          <label for="talk2m-username" translate>Username</label>
+          <input
+            class="form-control"
+            id="talk2m-username"
+            [(ngModel)]="config.username"
+            [disabled]="talk2mConnected"
+            type="text"
+            name="username"
+            autocomplete="username"
+            placeholder="User"
+          />
+        </div>
+        <div class="form-group">
+          <label for="talk2m-password" translate>Password</label>
+          <input
+            class="form-control"
+            id="talk2m-password"
+            [(ngModel)]="config.password"
+            [disabled]="talk2mConnected"
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            placeholder="Password"
+          />
+          <p class="help-block" id="helpinput" translate>
+            Password won't be saved. If the session disconnects, you have to re-enter your password.
+          </p>
+        </div>
+      </fieldset>
+
+      <!-- TODO move somewhere else? -->
+      <fieldset *ngIf="isMicroserviceEnabled">
+        <div class="legend form-block" translate>Data Mailbox</div>
+
+        <div class="form-group">
+          <label for="mailbox-token" translate>Token</label>
+          <input
+            class="form-control"
+            id="mailbox-token"
+            [(ngModel)]="config.token"
+            [disabled]="talk2mConnected"
+            type="text"
+            name="token"
+            placeholder="589645ijtebgogsaite348t34t34bt834qu343348t5b4"
+          />
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="card-footer separator">
+      <button
+        class="btn btn-primary"
+        *ngIf="!talk2mConnected"
+        [disabled]="actionInProgress || !config.account || !config.username || !config.password"
+        type="submit"
+        translate
+      >
+        Save & Connect
+      </button>
+      <button
+        class="btn btn-danger"
+        *ngIf="talk2mConnected"
+        [disabled]="actionInProgress"
+        type="submit"
+        value=""
+        translate
+      >
+        Logout
+      </button>
+      <button class="btn btn-default" [disabled]="actionInProgress" (click)="close()" type="button">
+        Cancel
+      </button>
+    </div>
+  </form>
+</c8y-modal>
